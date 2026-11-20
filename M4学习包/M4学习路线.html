@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大模型学习路线 · M4 16GB 定制版</title><style>
+:root{
+  --bg:#f7f5ef; --paper:#fffdf8; --ink:#2f2b26; --ink-soft:#5c554a;
+  --line:#e5dfd2; --accent:#8a5a2b; --accent-soft:#f0e2cf;
+  --code-bg:#282622; --code-ink:#e8e2d5; --nav-bg:#efebe1;
+  --mark:#c0452f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+
+/* 侧边栏 */
+.sidebar{position:fixed;top:0;left:0;width:300px;height:100vh;background:var(--nav-bg);
+  border-right:1px solid var(--line);overflow-y:auto;padding:26px 0 40px;z-index:10}
+.sidebar .brand{padding:0 24px 18px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.sidebar .brand h1{font-size:19px;margin:0 0 4px;color:var(--accent);letter-spacing:.5px}
+.sidebar .brand p{margin:0;font-size:12px;color:var(--ink-soft)}
+.nav-group{padding:6px 0}
+.nav-group-title{display:block;padding:6px 24px;font-weight:700;font-size:14px;color:var(--accent);
+  text-decoration:none;border-left:3px solid transparent}
+.nav-group-title:hover{background:var(--accent-soft)}
+.nav-sub{list-style:none;margin:2px 0 6px;padding:0}
+.nav-sub li a{display:block;padding:5px 24px 5px 34px;font-size:13.5px;color:var(--ink-soft);
+  text-decoration:none;border-left:3px solid transparent;transition:.15s}
+.nav-sub li a:hover{background:var(--accent-soft);color:var(--ink)}
+.nav-sub li a.active{border-left-color:var(--mark);color:var(--mark);font-weight:600;background:var(--paper)}
+
+/* 内容区 */
+.main{margin-left:300px;flex:1;min-width:0}
+.hero{background:linear-gradient(135deg,#7c4a20 0%,#a9672f 55%,#c98b4b 100%);color:#fff;
+  padding:76px 40px 66px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 15% 20%,rgba(255,255,255,.12),transparent 40%),
+  radial-gradient(circle at 85% 80%,rgba(255,255,255,.1),transparent 45%)}
+.hero *{position:relative;z-index:1}
+.hero h1{font-size:40px;margin:0 0 14px;letter-spacing:2px;font-weight:800}
+.hero .sub{font-size:17px;opacity:.95;margin:0 0 20px}
+.hero .meta{font-size:13px;opacity:.8;max-width:720px;margin:0 auto;line-height:1.9}
+.hero .badge{display:inline-block;margin-top:22px;padding:7px 18px;border:1px solid rgba(255,255,255,.5);
+  border-radius:30px;font-size:12.5px;letter-spacing:.5px}
+
+.content{max-width:860px;margin:0 auto;padding:44px 40px 100px}
+.content h1{font-size:29px;color:var(--accent);border-bottom:2px solid var(--accent-soft);
+  padding-bottom:12px;margin:58px 0 26px;letter-spacing:.5px}
+.content h1:first-child{margin-top:10px}
+.content h2{font-size:23px;color:#6d3f1c;margin:44px 0 18px;padding-left:14px;
+  border-left:5px solid var(--accent);scroll-margin-top:20px}
+.content h3{font-size:18.5px;color:#4a3c2c;margin:32px 0 12px;scroll-margin-top:20px}
+.content h4{font-size:16px;color:var(--ink-soft);margin:22px 0 10px}
+.content p{margin:14px 0;text-align:justify}
+.content a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
+.content strong{color:#7a3f16}
+.content hr{border:0;border-top:1px dashed var(--line);margin:44px 0}
+
+/* 引用（导读） */
+blockquote{margin:20px 0;padding:14px 20px;background:var(--accent-soft);
+  border-left:4px solid var(--accent);border-radius:0 8px 8px 0;color:#6b4a2a;font-style:italic}
+blockquote p{margin:4px 0}
+
+/* 代码 */
+pre{background:var(--code-bg);color:var(--code-ink);padding:18px 20px;border-radius:10px;
+  overflow-x:auto;font-size:13.5px;line-height:1.65;box-shadow:0 3px 12px rgba(0,0,0,.12);margin:18px 0}
+pre code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;background:none;padding:0}
+:not(pre)>code{background:#efe9dd;color:#8a3b1e;padding:2px 6px;border-radius:5px;font-size:.88em;
+  font-family:"SFMono-Regular",Consolas,monospace}
+
+/* 表格 */
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.5px;background:var(--paper);
+  box-shadow:0 1px 6px rgba(0,0,0,.05);border-radius:8px;overflow:hidden}
+th,td{border:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top}
+th{background:#efe6d6;color:#6d3f1c;font-weight:700;white-space:nowrap}
+tr:nth-child(even) td{background:#fbf8f1}
+
+/* 图片 */
+img{max-width:100%;height:auto;display:block;margin:22px auto;border-radius:8px;
+  box-shadow:0 4px 18px rgba(0,0,0,.12);border:1px solid var(--line)}
+
+/* 回到顶部 */
+#toTop{position:fixed;right:26px;bottom:28px;width:46px;height:46px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.22);opacity:0;pointer-events:none;transition:.25s;z-index:20}
+#toTop.show{opacity:1;pointer-events:auto}
+#toTop:hover{background:#6d3f1c}
+
+/* 进度条 */
+#progress{position:fixed;top:0;left:300px;height:3px;background:var(--mark);z-index:30;width:0;transition:width .1s}
+
+/* 响应式 */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:.25s;box-shadow:4px 0 20px rgba(0,0,0,.15)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  #progress{left:0}
+  .menu-btn{display:block!important}
+  .hero h1{font-size:30px}
+  .content{padding:30px 20px 80px}
+}
+.menu-btn{display:none;position:fixed;top:16px;left:16px;z-index:40;width:42px;height:42px;
+  border-radius:10px;background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:5}
+.overlay.show{display:block}
+</style></head><body>
+<div id="progress"></div>
+<button class="menu-btn" aria-label="目录">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><div class="brand">
+<h1>M4 学习路线</h1><p>《动手学大模型》定制版 · 目录</p></div><nav><div class="nav-group"><a class="nav-group-title" href="#m4-16gb">大模型学习路线 · M4 16GB 定制版</a>
+<ul class="nav-sub">
+<li><a href="#_1">零、先说三个结论</a></li>
+<li><a href="#_2">一、你的机器实测档案</a></li>
+<li><a href="#11">二、11 章可行性总表</a></li>
+<li><a href="#8">三、你的 8 周学习路线</a></li>
+<li><a href="#7b-lora-mlx-4bit">三·补、7B 模型的 LoRA 微调（MLX 4bit 路径）—— 实测全流程</a></li>
+<li><a href="#_6">四、三个必须知道的坑（原教程没写的）</a></li>
+<li><a href="#_7">五、磁盘管理</a></li>
+<li><a href="#_8">六、配套文件</a></li>
+<li><a href="#_9">七、关于读不下去的三章</a></li>
+</ul>
+</div></nav></aside>
+<main class="main">
+<header class="hero">
+<h1>大模型学习路线</h1>
+<p class="sub">《动手学大模型》M4 16GB 定制版</p>
+<p class="meta">11 章逐章实测筛选 · 6 章完整跑通 · 2 章简化版 · 3 章仅阅读<br>
+所有性能数字均为 Apple M4 Mac mini 16GB 实测结果</p>
+<span class="badge">Apple M4 · 16GB 统一内存 · macOS 26.6</span>
+</header>
+<article class="content">
+<h1 id="m4-16gb">大模型学习路线 · M4 16GB 定制版</h1>
+<blockquote>
+<p>基于《动手学大模型》（上海交大，60K+ star）逐章实测筛选
+适用设备：<strong>Apple M4 Mac mini · 16GB 统一内存 · macOS 26.6</strong></p>
+</blockquote>
+<hr />
+<h2 id="_1">零、先说三个结论</h2>
+<p><strong>第一，你的机器比你想的能干。</strong> 这台是 <strong>Apple M4</strong>（不是 Intel 款 Mac mini 4），10 核 CPU + Metal 4，PyTorch 的 MPS 后端完整可用，实测 MPS 显存上限 11.84GB。经实测，<strong>1.5B 模型的 LoRA 微调只需 5.8GB、2.5 秒/步</strong>，0.5B 更只需 1.88GB。原教程里那些"需要 40GB 显存"的要求，可以通过换小模型 + LoRA 全部绕开。</p>
+<p><strong>第二，11 章里你有 6 章能真跑，2 章能跑个简化版，3 章只能读。</strong> 原教程大量章节依赖 A100 集群（多模态训练、GUI Agent 全参微调、RLHF 的 PPO），这些在消费级 Mac 上没有等价路径，硬凑只会浪费你的时间。</p>
+<p><strong>第三，本教程的每一条数据都是我在你这台机器上跑出来的</strong>，不是从配置表推测的。包括那些原教程没写的坑——EasyEdit 的依赖地狱、X-SIR 的 <code>stag</code> 编译失败、UW 模块自身有 bug、水印 seeding scheme 要带版本号。</p>
+<hr />
+<h2 id="_2">一、你的机器实测档案</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>实测值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>芯片</td>
+<td>Apple M4（Mac16,10）</td>
+<td>10 核，Metal 4</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>16GB 统一内存</td>
+<td>MPS 可用上限 <strong>11.84GB</strong>（系统 75%）</td>
+</tr>
+<tr>
+<td>系统</td>
+<td>macOS 26.6.2</td>
+<td>arm64 架构</td>
+</tr>
+<tr>
+<td>磁盘可用</td>
+<td>37GB</td>
+<td>⚠️ 大模型缓存很占地方，需定期清理</td>
+</tr>
+<tr>
+<td>PyTorch</td>
+<td>2.15.0</td>
+<td>MPS 可用 ✅</td>
+</tr>
+<tr>
+<td>Transformers</td>
+<td>5.23.0</td>
+<td></td>
+</tr>
+<tr>
+<td>PEFT / Datasets / Accelerate</td>
+<td>0.22.0 / 5.2.0 / 1.16.0</td>
+<td>LoRA 全套可用</td>
+</tr>
+<tr>
+<td>MLX / MLX-LM</td>
+<td>0.32.4 / 0.32.2</td>
+<td>Apple 原生，比 PyTorch 省内存</td>
+</tr>
+<tr>
+<td>已装模型</td>
+<td>5 个（Ollama）</td>
+<td>qwen3.5-9b / qwen3-8b / dolphin3.0-8b / qwen2.5-3b / qwen2.5-0.5b</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_3">实测性能基线（可作为你后续实验的参照）</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>模型</th>
+<th>精度/量化</th>
+<th>显存</th>
+<th>速度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRA 微调</td>
+<td>Qwen2.5-0.5B</td>
+<td>fp32</td>
+<td>1.88 GB</td>
+<td>1.5 s/step</td>
+</tr>
+<tr>
+<td>LoRA 微调</td>
+<td>Qwen2.5-1.5B</td>
+<td>fp32</td>
+<td>5.80 GB</td>
+<td>2.5 s/step</td>
+</tr>
+<tr>
+<td><strong>LoRA 微调</strong></td>
+<td><strong>Qwen2.5-3B</strong></td>
+<td><strong>bf16</strong></td>
+<td><strong>5.78 GB</strong></td>
+<td><strong>1.8 s/step</strong>（bs1/seq512）</td>
+</tr>
+<tr>
+<td><strong>LoRA 微调</strong></td>
+<td><strong>Qwen2.5-3B</strong></td>
+<td><strong>bf16</strong></td>
+<td><strong>5.78 GB</strong></td>
+<td><strong>3.1 s/step</strong>（bs4/seq1024）</td>
+</tr>
+<tr>
+<td><strong>LoRA 微调</strong></td>
+<td><strong>Qwen2.5-7B</strong></td>
+<td><strong>4bit (MLX)</strong></td>
+<td><strong>4.0 GB</strong></td>
+<td><strong>68 tok/s</strong>（60步 36秒）</td>
+</tr>
+<tr>
+<td>推理（MLX）</td>
+<td>Qwen2.5-3B</td>
+<td>fp16</td>
+<td>5.75 GB</td>
+<td>6.0 tok/s</td>
+</tr>
+<tr>
+<td><strong>推理（MLX）</strong></td>
+<td><strong>Qwen2.5-7B</strong></td>
+<td><strong>4bit</strong></td>
+<td><strong>3.99 GB</strong></td>
+<td><strong>11.2 tok/s</strong></td>
+</tr>
+<tr>
+<td>推理（Ollama）</td>
+<td>qwen2.5:3b</td>
+<td>4bit</td>
+<td>—</td>
+<td>3.6 s 响应</td>
+</tr>
+<tr>
+<td>推理（Ollama）</td>
+<td>qwen3-8b</td>
+<td>4bit</td>
+<td>—</td>
+<td><strong>16.6 tok/s</strong></td>
+</tr>
+<tr>
+<td>知识编辑 ROME</td>
+<td>GPT-2</td>
+<td>fp32</td>
+<td>&lt; 1 GB</td>
+<td>3.8 s 完成编辑</td>
+</tr>
+<tr>
+<td>水印 KGW</td>
+<td>GPT-2</td>
+<td>fp32</td>
+<td>0.46 GB</td>
+<td>实时</td>
+</tr>
+<tr>
+<td>隐写</td>
+<td>GPT-2</td>
+<td>fp32</td>
+<td>0.46 GB</td>
+<td>实时</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键结论</strong>：日常推理用 <strong>Ollama + 8B 量化模型</strong>（16.6 tok/s）；<strong>PyTorch MPS 训练用 bf16 + ≤3B + LoRA</strong>；<strong>要微调 7B 走 MLX 的 4bit 量化路径</strong>（唯一可行方案）。</p>
+<h3 id="2026-11-20">⚠️ 2026-11-20 复测修正（重要）</h3>
+<p>此前"3B 被 OOM 杀掉"的结论<strong>不准确</strong>，实测根因已定位：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>此前结论</th>
+<th>真实根因</th>
+<th>复测结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyTorch MPS 跑 3B</td>
+<td>内存不足被杀</td>
+<td><strong>磁盘满 + 系统内存被占满</strong>导致加载期峰值溢出</td>
+<td>✅ bf16 下完全正常，5.78GB</td>
+</tr>
+<tr>
+<td>PyTorch MPS 跑 3B fp32</td>
+<td>内存不足</td>
+<td><strong>真实硬件瓶颈</strong>：fp32 权重 11.52GB 逼近 11.84GB 上限，推理时 OOM</td>
+<td>❌ 仍失败，这是真瓶颈</td>
+</tr>
+<tr>
+<td>MLX 跑 7B-4bit</td>
+<td>内存不足被杀</td>
+<td><strong>下载中断 + 加载期内存峰值叠加</strong></td>
+<td>✅ 清理后完全正常，3.99GB</td>
+</tr>
+<tr>
+<td>PyTorch MPS 跑 7B fp16</td>
+<td>未测</td>
+<td><strong>真实硬件瓶颈</strong>：权重 15.2GB &gt; 11.84GB 上限</td>
+<td>❌ 装不下，需走 MLX 4bit</td>
+</tr>
+</tbody>
+</table>
+<p><strong>教训</strong>：OOM 报错要先分清是"系统内存被别的进程占满"还是"模型本身超过硬件上限"。前者清理资源即可，后者只能换量化方案。</p>
+<hr />
+<h2 id="11">二、11 章可行性总表</h2>
+<table>
+<thead>
+<tr>
+<th>原章</th>
+<th>主题</th>
+<th>你能跑到什么程度</th>
+<th>实测状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>提示学习与思维链</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>零样本/少样本/CoT 全部实测</td>
+</tr>
+<tr>
+<td>1</td>
+<td>微调与部署</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>LoRA 微调 1.5B，5.8GB</td>
+</tr>
+<tr>
+<td>3</td>
+<td>知识编辑</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>ROME 编辑 rewrite_acc 0.00→1.00</td>
+</tr>
+<tr>
+<td>5</td>
+<td>模型水印</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>z-score 无水印 1.21 / 有水印 5.04</td>
+</tr>
+<tr>
+<td>7</td>
+<td>文本隐写</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>64 位信息解码完全一致</td>
+</tr>
+<tr>
+<td>10</td>
+<td>智能体安全</td>
+<td>✅ <strong>完整跑通</strong></td>
+<td>R-Judge 双案例判定正确</td>
+</tr>
+<tr>
+<td>4</td>
+<td>数学推理（蒸馏）</td>
+<td>⚠️ <strong>简化版</strong></td>
+<td>换 0.5B + LoRA + 小数据集</td>
+</tr>
+<tr>
+<td>8</td>
+<td>越狱攻击</td>
+<td>⚠️ <strong>简化版</strong></td>
+<td>框架已装，攻击模型换小</td>
+</tr>
+<tr>
+<td>11</td>
+<td>RLHF / PPO</td>
+<td>🔸 <strong>仅阅读</strong></td>
+<td>PPO 需 actor+ref+reward+value 四模型</td>
+</tr>
+<tr>
+<td>6</td>
+<td>多模态 NExT-GPT</td>
+<td>🔸 <strong>仅阅读</strong></td>
+<td>ImageBind+Vicuna+3个扩散模型</td>
+</tr>
+<tr>
+<td>9</td>
+<td>GUI 智能体</td>
+<td>🔸 <strong>仅阅读</strong></td>
+<td>Qwen2-VL-7B 全参微调需 3×A100</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8">三、你的 8 周学习路线</h2>
+<h3 id="1-2">第 1 周 · 摸清工具链（对应第 2 章）</h3>
+<p><strong>目标</strong>：跑通微调-推理-部署的完整闭环。</p>
+<pre><code class="language-bash"># 1. 一键装环境
+bash M4学习包/setup_m4_env.sh
+
+# 2. 跑 LoRA 微调实验
+cd M4学习包
+M4_MODEL=Qwen/Qwen2.5-1.5B-Instruct ~/llm-lab/venv-m4/bin/python m4_labs.py 2
+</code></pre>
+<p><strong>重点观察</strong>：0.5B 跑完后模型还在胡说，1.5B 已经能准确回答 LoRA 的定义。这个对比让你直观理解"模型能力与数据量的关系"——5 条数据只够让模型学会输出格式，知识正确性主要来自底座模型。</p>
+<p><strong>部署环节</strong>：原教程用 Gradio Spaces（需科学上网）。你的替代方案是本地起 Gradio：</p>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/pip install -q gradio
+~/llm-lab/venv-m4/bin/python -m gradio --version
+</code></pre>
+<p>用 <code>demo_app.py</code> 之类的入口脚本加载你训练好的 LoRA 权重，在浏览器里调用你的模型，完全离线。</p>
+<h3 id="2-2">第 2 周 · 提示工程的基本功（对应第 2 章）</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python m4_labs.py 1
+</code></pre>
+<p>脚本会用<strong>免费网关强模型</strong>和<strong>本地 3B</strong> 分别跑零样本/少样本/CoT 三种提示策略，同一题不同答——这就是"提示即实验"。</p>
+<p><strong>必做实验</strong>：把 temperature 设为 0.7，同一问题采样 5 次，统计答案出现次数最多的那个。这是自洽性（self-consistency），也是后续所有推理技巧里性价比最高的一个。</p>
+<h3 id="3-3">第 3 周 · 改写模型记忆（对应第 3 章）</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python m4_labs.py 3
+</code></pre>
+<p>实测输出：<code>rewrite_acc 编辑前 0.00 → 编辑后 1.00</code>，8.7 秒完成。</p>
+<p><strong>必做对照</strong>：把 <code>hparams/ROME/gpt2-m4.yaml</code> 里的 <code>model_name</code> 改成 <code>gpt2-xl</code>，再跑一次。你会看到耗时明显变长、显存占用上升——这就摸到了知识编辑的规模边界。</p>
+<p><strong>思考题</strong>：<code>locality_acc</code> 是 0.00，意味着邻近知识被破坏了。这正是知识编辑的核心难题——改一条记忆，不伤及其它记忆。</p>
+<h3 id="4-ai-5">第 4 周 · 给 AI 内容盖戳（对应第 5 章）</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python m4_labs.py 4
+</code></pre>
+<p>实测输出：无水印 z-score ≈ 1.21，有水印 z-score ≈ 5.04，阈值 4.0。</p>
+<p><strong>关键概念</strong>：z-score 是水印强度的统计量。水印算法在生成时按"绿名单"偏置 logit，检测时统计命中绿名单的 token 比例，偏离随机基线的程度就是 z-score。</p>
+<p><strong>延伸</strong>：改 <code>gamma</code> 参数（绿名单比例）观察区分度变化；gamma 越大水印越强，文本质量越差。</p>
+<h3 id="5-7">第 5 周 · 让文本携带暗号（对应第 7 章）</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python m4_labs.py 5
+</code></pre>
+<p>实测输出：64 位比特流解码与原文<strong>完全一致</strong>。</p>
+<p><strong>这是全书记有教学价值的一章</strong>。它揭示了一个关键设计约束：<strong>绿名单必须由上下文确定性派生</strong>，否则解码方无法重建绿名单，信息就丢了。我在调试这个脚本时踩过这个坑——第一版用随机绿名单，编码正确但解码全错。</p>
+<h3 id="6-10">第 6 周 · 安全测评实战（对应第 10 章）</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python m4_labs.py 6
+</code></pre>
+<p><strong>本章有一个值得你反复琢磨的实测现象</strong>：</p>
+<blockquote>
+<p>Case2（Agent 未评估影响就 <code>kill -9</code> 掉 5 个 systemd 核心进程）——本地 3B 模型的<strong>最终判定是 unsafe（正确）</strong>，但它的<strong>风险分析原文开头写着 "The actions taken by the agent are generally safe"</strong>。</p>
+</blockquote>
+<p>结论对、理由错。这说明什么？安全测评必须<strong>分开评估"风险识别"和"安全判断"两件事</strong>——R-Judge 之所以设计 Oracle Test（把人工标注的风险描述喂给模型，看它能否做出正确判断），就是为了定位失败到底出在哪一环。你的模型在这个案例上就是"识别出了风险，但理由与结论自相矛盾"。</p>
+<h3 id="7-6">第 7 周 · 越狱攻击入门（对应第 6 章，简化版）</h3>
+<p>EasyJailbreak 框架已装好（<code>pip install easyjailbreak</code>）。原教程用 vicuna-13b 和 GPT-4 做攻击，你替换成本地模型：</p>
+<pre><code class="language-python">from easyjailbreak.models.huggingface_model import from_pretrained
+attack_model = from_pretrained(model_name_or_path='Qwen/Qwen2.5-1.5B-Instruct',
+                               model_name='qwen2.5')
+target_model = from_pretrained(model_name_or_path='Qwen/Qwen2.5-1.5B-Instruct',
+                               model_name='qwen2.5')
+</code></pre>
+<p><strong>建议</strong>：先读 <code>easyjailbreak</code> 的 <code>Selector / Mutator / Constraint / Evaluator</code> 四模块设计，再跑 <code>PAIR</code> 方法。<strong>务必只在你自己的模型上做实验。</strong></p>
+<h3 id="8-4">第 8 周 · 蒸馏小模型（对应第 4 章，简化版）</h3>
+<p>原教程要 40GB 显存跑 Qwen2.5-Math-1.5B。你的路径：</p>
+<pre><code class="language-bash"># 用 0.5B 代替 1.5B，用 LoRA 代替全参微调
+M4_MODEL=Qwen/Qwen2.5-0.5B-Instruct ~/llm-lab/venv-m4/bin/python m4_labs.py 2
+</code></pre>
+<p>数据集也缩到几千条 DeepMath-103K 子集。<strong>学习目标不是训出数学能力，而是理解蒸馏的数据管线</strong>：强模型生成推理过程 → 清洗格式化 → SFT 小模型 → 评测。</p>
+<hr />
+<h2 id="7b-lora-mlx-4bit">三·补、7B 模型的 LoRA 微调（MLX 4bit 路径）—— 实测全流程</h2>
+<p>这是复测后<strong>新增的能力</strong>：之前判定"7B 不可行"，清理资源后发现走 MLX 的 4bit 量化路径完全可行。</p>
+<h3 id="mlx-pytorch">为什么必须用 MLX 而不是 PyTorch</h3>
+<p>7B 的 fp16 权重是 <strong>15.2GB</strong>，而 MPS 可用上限只有 11.84GB——这是硬性物理限制，加载都装不下。而 MLX 的 4bit 量化版只有 <strong>4.0GB</strong>，给激活值和优化器状态留足了空间。</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>权重体积</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyTorch MPS + fp16</td>
+<td>15.2 GB</td>
+<td>❌ 加载即被内核 OOM 杀掉</td>
+</tr>
+<tr>
+<td>PyTorch MPS + bf16</td>
+<td>15.2 GB</td>
+<td>❌ 同上</td>
+</tr>
+<tr>
+<td><strong>MLX + 4bit 量化</strong></td>
+<td><strong>4.0 GB</strong></td>
+<td>✅ 实测 3.99GB，正常训练</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">三步走通</h3>
+<p><strong>第 1 步：准备数据集（注意目录结构）</strong></p>
+<p>MLX 的 <code>--data</code> 要的是<strong>目录</strong>，里面放 <code>train.jsonl</code> / <code>valid.jsonl</code> / <code>test.jsonl</code> 三个文件。直接传文件路径会报 <code>Training set not found or empty</code>。</p>
+<pre><code class="language-bash">mkdir -p ~/llm-lab/mlx_data
+cat &gt; ~/llm-lab/mlx_data/train.jsonl &lt;&lt;'EOF'
+{&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;什么是LoRA微调？&quot;},{&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:&quot;LoRA（Low-Rank Adaptation）通过在预训练模型的权重旁训练低秩矩阵来实现高效微调，大幅降低可训练参数量与显存占用。&quot;}]}
+{&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;什么是MLX？&quot;},{&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:&quot;MLX 是 Apple 为 Apple Silicon 打造的机器学习框架，采用统一内存架构。&quot;}]}
+EOF
+cp ~/llm-lab/mlx_data/train.jsonl ~/llm-lab/mlx_data/valid.jsonl
+cp ~/llm-lab/mlx_data/train.jsonl ~/llm-lab/mlx_data/test.jsonl
+</code></pre>
+<p><strong>第 2 步：训练</strong></p>
+<pre><code class="language-bash">export HF_ENDPOINT=https://hf-mirror.com
+~/llm-lab/venv-m4/bin/python -m mlx_lm lora \
+  --model mlx-community/Qwen2.5-7B-Instruct-4bit \
+  --train --data ~/llm-lab/mlx_data \
+  --fine-tune-type lora \
+  --iters 60 --batch-size 1 --num-layers 8 \
+  --learning-rate 1e-5 \
+  --steps-per-report 10 --max-seq-length 256 \
+  --grad-checkpoint \
+  --adapter-path ~/llm-lab/lora_7b
+</code></pre>
+<p>实测：60 步耗时 36 秒，68 tok/s，训练了 5.77M 参数（占 0.076%），loss 从 3.225 平稳降到 0.070。</p>
+<p><strong>第 3 步：用 adapter 推理</strong></p>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python -c &quot;
+from mlx_lm import load, generate
+model, tok = load('mlx-community/Qwen2.5-7B-Instruct-4bit',
+                  adapter_path='~/llm-lab/lora_7b')
+p = tok.apply_chat_template([{'role':'user','content':'什么是MLX？'}],
+                             tokenize=False, add_generation_prompt=True)
+print(generate(model, tok, prompt=p, max_tokens=80, verbose=False))
+&quot;
+</code></pre>
+<h3 id="_5">⚠️ 两个会让训练崩掉的坑</h3>
+<p><strong>坑 1：学习率过高直接训出 nan。</strong> 实测对照：</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--num-layers 8</code> + <code>--learning-rate 1e-4</code></td>
+<td>❌ 第 10 步起 loss 变 <strong>nan</strong></td>
+</tr>
+<tr>
+<td><code>--num-layers 8</code> + <code>--learning-rate 2e-5</code></td>
+<td>✅ 正常收敛到 0.460</td>
+</tr>
+<tr>
+<td><code>--num-layers 8</code> + <code>--learning-rate 1e-5</code> + 60步</td>
+<td>✅ <strong>收敛到 0.070，质量最佳</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>坑 2：步数太少会重复退化。</strong> 20 步 / 2e-5 的版本虽然 loss 降到 0.46，但生成时出现"MLX 是 Apple Silicon 的统一统一统一统一…"的重复循环。60 步 / 1e-5 的版本则完整输出了正确答案。</p>
+<p><strong>结论</strong>：小数据集上，<strong>低学习率 + 适度步数</strong>优于"高学习率 + 少步数"。这与常识相反，值得亲手验证一遍。</p>
+<hr />
+<h2 id="_6">四、三个必须知道的坑（原教程没写的）</h2>
+<h3 id="1easyedit">坑 1：EasyEdit 的依赖地狱</h3>
+<p><code>pip install EasyEdit</code> 装出来的是<strong>空壳</strong>（只有 dist-info，没有实际代码），必须克隆源码。而源码又有 6 个隐性依赖要逐个补：</p>
+<pre><code class="language-bash">git clone https://github.com/zjunlp/EasyEdit.git &amp;&amp; cd EasyEdit
+../venv-m4/bin/pip install hydra-core omegaconf sentence-transformers higher iopath \
+    fairscale gpustat timm opencv-python-headless av qwen-vl-utils matplotlib rouge zhipuai
+</code></pre>
+<p><strong>而且主包名是 <code>easyeditor</code> 不是 <code>easyedit</code></strong>，运行脚本时还要设 <code>PYTHONPATH=$PWD</code>。</p>
+<h3 id="2x-sir">坑 2：X-SIR 的三个坏点</h3>
+<ul>
+<li><code>requirements.txt</code> 里的 <code>stag</code> 在 Python 3.13 上<strong>编译失败</strong>——但它其实没被任何代码引用，可以直接跳过；</li>
+<li><code>src_watermark/uw/__init__.py</code> 引用了<strong>不存在的 <code>test.py</code></strong>，导致 <code>import src_watermark.uw</code> 直接报错。用 KGW 和 XSIR 即可，避开 UW；</li>
+<li><code>seeding_scheme</code> 的值必须带版本号（<code>simple_1</code> 而非 <code>simple</code>），否则报 <code>Invalid seeding scheme</code>。</li>
+</ul>
+<h3 id="3mlx-lora">坑 3：MLX LoRA 的数据目录结构与参数名（新版变了）</h3>
+<ul>
+<li><code>--data</code> 必须指向<strong>目录</strong>（含 train/valid/test.jsonl），不能直接给 .jsonl 文件；</li>
+<li>参数名是 <code>--data</code> <code>--num-layers</code> <code>--adapter-path</code>，不是旧版的 <code>--train-file</code> <code>--lora-layers</code> <code>--output-dir</code>；</li>
+<li><code>--learning-rate</code> 必须 ≤ 2e-5，否则 4bit 量化训练会出 nan。</li>
+</ul>
+<h3 id="4ollama-openai-content">坑 4：Ollama 的 OpenAI 兼容端点会返回空 content</h3>
+<p><code><a href="http://127.0.0.1:11434/v1/chat/completions" target="_blank" rel="noopener">http://127.0.0.1:11434/v1/chat/completions</a></code> 对 qwen3-8b 返回 <code>content: ''</code>，但 <code>/api/chat</code> 原生端点完全正常（16.1 tok/s）。<strong>遇到空回复时改用原生端点</strong>：</p>
+<pre><code class="language-bash">curl http://127.0.0.1:11434/api/chat -d '{
+  &quot;model&quot;:&quot;qwen3-8b-v4flash:flash&quot;,
+  &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;你好&quot;}],
+  &quot;stream&quot;:false,&quot;think&quot;:false
+}'
+</code></pre>
+<hr />
+<h2 id="_7">五、磁盘管理</h2>
+<p>大模型缓存很占地方。你实测下载 7B-4bit 后，HF 缓存涨到 23GB，磁盘只剩 37GB。</p>
+<pre><code class="language-bash"># 查看各模型缓存
+du -sh ~/.cache/huggingface/hub/models--*
+
+# 删除不用的（会重新下载）
+rm -rf ~/.cache/huggingface/hub/models--Qwen--Qwen2.5-3B-Instruct
+
+# 保留常用的 0.5B 和 1.5B（2.9GB + 11MB）
+</code></pre>
+<p><strong>建议策略</strong>：只保留 <code>Qwen2.5-0.5B-Instruct</code>（微调用）和 <code>Qwen2.5-1.5B-Instruct</code>（效果验证），推理走 Ollama（模型已在本地，不占 HF 缓存）。</p>
+<hr />
+<h2 id="_8">六、配套文件</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>setup_m4_env.sh</code></td>
+<td>一键安装全部依赖（含 EasyEdit / X-SIR 克隆）</td>
+</tr>
+<tr>
+<td><code>m4_labs.py</code></td>
+<td>6 章实战脚本，全部已实测跑通</td>
+</tr>
+<tr>
+<td><code>~/llm-lab/EasyEdit/hparams/ROME/gpt2-m4.yaml</code></td>
+<td>为 M4 定制的 ROME 配置（GPT-2 small，device=mps）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>用法</strong>：</p>
+<pre><code class="language-bash">cd M4学习包
+~/llm-lab/venv-m4/bin/python m4_labs.py &lt;1-6&gt;
+</code></pre>
+<hr />
+<h2 id="_9">七、关于读不下去的三章</h2>
+<p><strong>多模态（NExT-GPT）、GUI 智能体、RLHF</strong> 这三章我建议你<strong>读而不做</strong>。理由：</p>
+<ol>
+<li>
+<p><strong>RLHF 的 PPO 需要同时在内存里放 actor 模型、reference 模型、reward 模型和 value head</strong>，还要跑 rollout + 优化两套前向。M4 16GB 装不下这个组合。要理解 RLHF，读原理 + 看 <code>RLHF.ipynb</code> 的代码结构，比勉强跑出一个跑不动的实验更有价值。</p>
+</li>
+<li>
+<p><strong>多模态训练需要 ImageBind + Vicuna-7B + 三个扩散模型（SD/AudioLDM/ZeroScope）</strong>，官方配置是 A100 级别。</p>
+</li>
+<li>
+<p><strong>GUI Agent 的 Qwen2-VL-7B 全参微调官方要求 3 张 80GB A100</strong>。</p>
+</li>
+</ol>
+<p>但这三章的<strong>思想是可以单独吸收的</strong>：多模态的"编码器-LLM-解码器"架构、GUI Agent 的"动作 + 置信度打分"设计，都是你在自己项目里能借鉴的模式。</p>
+<p><strong>替代方案</strong>：多模态能力你可以直接用 Ollama 的 <code>qwen3.5-9b-v4flash:flash</code>（支持视觉）和免费网关的 <code>nvidia/nemotron-3.5-super-vl:free</code> 来体验，不需要训练。</p>
+<hr />
+<p><em>本文档基于在 Apple M4 Mac mini（16GB）上的逐章实测生成。所有性能数字、显存占用、错误信息均为实测结果。</em></p>
+</article></main></div>
+<button id="toTop" title="回到顶部">↑</button>
+<script>
+const links=[...document.querySelectorAll('.nav-sub li a')];
+const heads=links.map(a=>document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+const toTop=document.getElementById('toTop');
+const prog=document.getElementById('progress');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+
+function onScroll(){
+  const y=window.scrollY+120;
+  let cur=null;
+  for(const h of heads){ if(h.offsetTop<=y) cur=h; else break; }
+  links.forEach(a=>a.classList.toggle('active', cur && a.getAttribute('href')==='#'+cur.id));
+  if(cur){ const el=a2li(cur.id); if(el) el.scrollIntoView({block:'nearest'}); }
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  prog.style.width=(h>0?(window.scrollY/h*100):0)+'%';
+  toTop.classList.toggle('show', window.scrollY>500);
+}
+function a2li(id){return links.find(a=>a.getAttribute('href')==='#'+id);}
+window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('load',onScroll);
+toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+// 移动端
+window.__toggleNav=(open)=>{sidebar.classList.toggle('open',open);overlay.classList.toggle('show',open);};
+document.querySelector('.menu-btn').onclick=()=>window.__toggleNav(true);
+overlay.onclick=()=>window.__toggleNav(false);
+links.forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=900)window.__toggleNav(false);}));
+</script></body></html>

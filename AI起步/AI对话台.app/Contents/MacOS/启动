@@ -1,0 +1,9 @@
+#!/bin/bash
+# AI 对话台启动器（双击运行，无需修改本文件）
+# 路径: Contents/MacOS/启动 -> 往上三层到 AI起步 目录
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PY="$(command -v python3 2>/dev/null || echo /usr/bin/python3)"
+if ! "$PY" -c 'import tkinter' 2>/dev/null; then
+  PY="/usr/bin/python3"
+fi
+exec "$PY" "$DIR/AI对话台.app.py"

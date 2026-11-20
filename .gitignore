@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# 项目私有数据
+.workbuddy/
+dive-into-llms/
+*.log
+
+# 环境与模型缓存（体积大且可重新生成）
+venv/
+venv-m4/
+.cache/
+*.safetensors
+*.gguf

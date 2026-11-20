@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《AI 起步》零基础大模型教程</title><style>
+:root{
+  --bg:#f7f5ef; --paper:#fffdf8; --ink:#2f2b26; --ink-soft:#5c554a;
+  --line:#e5dfd2; --accent:#8a5a2b; --accent-soft:#f0e2cf;
+  --code-bg:#282622; --code-ink:#e8e2d5; --nav-bg:#efebe1;
+  --mark:#c0452f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+
+/* 侧边栏 */
+.sidebar{position:fixed;top:0;left:0;width:300px;height:100vh;background:var(--nav-bg);
+  border-right:1px solid var(--line);overflow-y:auto;padding:26px 0 40px;z-index:10}
+.sidebar .brand{padding:0 24px 18px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.sidebar .brand h1{font-size:19px;margin:0 0 4px;color:var(--accent);letter-spacing:.5px}
+.sidebar .brand p{margin:0;font-size:12px;color:var(--ink-soft)}
+.nav-group{padding:6px 0}
+.nav-group-title{display:block;padding:6px 24px;font-weight:700;font-size:14px;color:var(--accent);
+  text-decoration:none;border-left:3px solid transparent}
+.nav-group-title:hover{background:var(--accent-soft)}
+.nav-sub{list-style:none;margin:2px 0 6px;padding:0}
+.nav-sub li a{display:block;padding:5px 24px 5px 34px;font-size:13.5px;color:var(--ink-soft);
+  text-decoration:none;border-left:3px solid transparent;transition:.15s}
+.nav-sub li a:hover{background:var(--accent-soft);color:var(--ink)}
+.nav-sub li a.active{border-left-color:var(--mark);color:var(--mark);font-weight:600;background:var(--paper)}
+
+/* 内容区 */
+.main{margin-left:300px;flex:1;min-width:0}
+.hero{background:linear-gradient(135deg,#7c4a20 0%,#a9672f 55%,#c98b4b 100%);color:#fff;
+  padding:76px 40px 66px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 15% 20%,rgba(255,255,255,.12),transparent 40%),
+  radial-gradient(circle at 85% 80%,rgba(255,255,255,.1),transparent 45%)}
+.hero *{position:relative;z-index:1}
+.hero h1{font-size:40px;margin:0 0 14px;letter-spacing:2px;font-weight:800}
+.hero .sub{font-size:17px;opacity:.95;margin:0 0 20px}
+.hero .meta{font-size:13px;opacity:.8;max-width:720px;margin:0 auto;line-height:1.9}
+.hero .badge{display:inline-block;margin-top:22px;padding:7px 18px;border:1px solid rgba(255,255,255,.5);
+  border-radius:30px;font-size:12.5px;letter-spacing:.5px}
+
+.content{max-width:860px;margin:0 auto;padding:44px 40px 100px}
+.content h1{font-size:29px;color:var(--accent);border-bottom:2px solid var(--accent-soft);
+  padding-bottom:12px;margin:58px 0 26px;letter-spacing:.5px}
+.content h1:first-child{margin-top:10px}
+.content h2{font-size:23px;color:#6d3f1c;margin:44px 0 18px;padding-left:14px;
+  border-left:5px solid var(--accent);scroll-margin-top:20px}
+.content h3{font-size:18.5px;color:#4a3c2c;margin:32px 0 12px;scroll-margin-top:20px}
+.content h4{font-size:16px;color:var(--ink-soft);margin:22px 0 10px}
+.content p{margin:14px 0;text-align:justify}
+.content a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
+.content strong{color:#7a3f16}
+.content hr{border:0;border-top:1px dashed var(--line);margin:44px 0}
+
+/* 引用（导读） */
+blockquote{margin:20px 0;padding:14px 20px;background:var(--accent-soft);
+  border-left:4px solid var(--accent);border-radius:0 8px 8px 0;color:#6b4a2a;font-style:italic}
+blockquote p{margin:4px 0}
+
+/* 代码 */
+pre{background:var(--code-bg);color:var(--code-ink);padding:18px 20px;border-radius:10px;
+  overflow-x:auto;font-size:13.5px;line-height:1.65;box-shadow:0 3px 12px rgba(0,0,0,.12);margin:18px 0}
+pre code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;background:none;padding:0}
+:not(pre)>code{background:#efe9dd;color:#8a3b1e;padding:2px 6px;border-radius:5px;font-size:.88em;
+  font-family:"SFMono-Regular",Consolas,monospace}
+
+/* 表格 */
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.5px;background:var(--paper);
+  box-shadow:0 1px 6px rgba(0,0,0,.05);border-radius:8px;overflow:hidden}
+th,td{border:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top}
+th{background:#efe6d6;color:#6d3f1c;font-weight:700;white-space:nowrap}
+tr:nth-child(even) td{background:#fbf8f1}
+
+/* 图片 */
+img{max-width:100%;height:auto;display:block;margin:22px auto;border-radius:8px;
+  box-shadow:0 4px 18px rgba(0,0,0,.12);border:1px solid var(--line)}
+
+/* 回到顶部 */
+#toTop{position:fixed;right:26px;bottom:28px;width:46px;height:46px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.22);opacity:0;pointer-events:none;transition:.25s;z-index:20}
+#toTop.show{opacity:1;pointer-events:auto}
+#toTop:hover{background:#6d3f1c}
+
+/* 进度条 */
+#progress{position:fixed;top:0;left:300px;height:3px;background:var(--mark);z-index:30;width:0;transition:width .1s}
+
+/* 响应式 */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:.25s;box-shadow:4px 0 20px rgba(0,0,0,.15)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  #progress{left:0}
+  .menu-btn{display:block!important}
+  .hero h1{font-size:30px}
+  .content{padding:30px 20px 80px}
+}
+.menu-btn{display:none;position:fixed;top:16px;left:16px;z-index:40;width:42px;height:42px;
+  border-radius:10px;background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:5}
+.overlay.show{display:block}
+</style></head><body>
+<div id="progress"></div>
+<button class="menu-btn" aria-label="目录">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><div class="brand">
+<h1>AI 起步</h1><p>零基础大模型教程 · 目录</p></div><nav><div class="nav-group"><a class="nav-group-title" href="#ai">《AI 起步》学习手册</a>
+<ul class="nav-sub">
+<li><a href="#_1">这套教程是给谁的</a></li>
+<li><a href="#_2">怎么开始（三个选择，从难到易）</a></li>
+<li><a href="#_6">想立刻自己动手？三条上手路径</a></li>
+<li><a href="#0">第 0 课：自由提问（先玩这个）</a></li>
+<li><a href="#_7">七课地图</a></li>
+<li><a href="#_8">每课长什么样</a></li>
+<li><a href="#_9">遇到问题怎么办</a></li>
+<li><a href="#_13">七课速查卡</a></li>
+<li><a href="#_14">学完之后</a></li>
+</ul>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#_15">上手实验手册 · 自己动手验证</a>
+<ul class="nav-sub">
+<li><a href="#_16">你的三条上手路径</a></li>
+<li><a href="#a">路径 A：对话台（最快上手）</a></li>
+<li><a href="#b-curl">路径 B：终端 curl 命令（看清背后）</a></li>
+<li><a href="#cpython">路径 C：Python 交互模式（自己写代码）</a></li>
+<li><a href="#_21">三个案例，在三条路径上分别验证</a></li>
+<li><a href="#_22">亲手验证的检查清单</a></li>
+<li><a href="#_23">出错了怎么办</a></li>
+<li><a href="#_24">下一步</a></li>
+</ul>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#0-ai">第 0 课 · 自由提问 · 你自己打字问 AI</a>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#1_3">第 1 课 · 大模型是什么？</a>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#2_3">第 2 课 · 第一次让电脑回答你</a>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#3_2">第 3 课 · 怎样把话说得更准</a>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#4_3">第 4 课 · 读懂模型输出的东西</a>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#5_3">第 5 课 · 教模型你自己的知识（微调）</a>
+<ul class="nav-sub">
+<li><a href="#_25">先说清楚：微调是什么</a></li>
+</ul>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#6_2">第 6 课 · 改掉模型记错的知识</a>
+<ul class="nav-sub">
+<li><a href="#vs">先说清楚：知识编辑 vs 微调</a></li>
+</ul>
+</div>
+<div class="nav-group"><a class="nav-group-title" href="#7-ai">第 7 课 · 给 AI 生成的内容盖个戳（水印）</a>
+<ul class="nav-sub">
+<li><a href="#_26">为什么需要水印</a></li>
+</ul>
+</div></nav></aside>
+<main class="main">
+<header class="hero">
+<h1>AI 起步</h1>
+<p class="sub">零基础大模型教程 · 七课学会</p>
+<p class="meta">面向完全没接触过 AI 的成年人 · 不需要会编程<br>
+所有实验在 Apple M4 Mac mini 16GB 上实测跑通</p>
+<span class="badge">第1课 大模型是什么 → 第7课 水印</span>
+</header>
+<article class="content">
+<h1 id="ai">《AI 起步》学习手册</h1>
+<blockquote>
+<p>零基础大模型入门 · 面向完全没接触过 AI 的成年人
+配套你的 Mac mini M4（16GB），全部实验在本机实测跑通</p>
+</blockquote>
+<hr />
+<h2 id="_1">这套教程是给谁的</h2>
+<p>如果你符合下面任意一条，这套教程就是为你做的：</p>
+<ul>
+<li>听说过 ChatGPT、DeepSeek、算力、微调这些词，但不知道它们是什么</li>
+<li>用过 AI 聊天，但只停留在"问一句答一句"，不知道为什么它有时准有时胡编</li>
+<li>想让 AI 处理自己的资料（合同、笔记、客服话术），但不知道从哪下手</li>
+<li>听人说"AI 门槛很高"，想知道自己够不够格学</li>
+</ul>
+<p><strong>你不需要会编程。</strong> 七课里只有第 5、6 课涉及代码，而且每一行都有中文解释，照着跑就行。</p>
+<hr />
+<h2 id="_2">怎么开始（三个选择，从难到易）</h2>
+<h3 id="_3">方式一：直接问我（最省事，零门槛）</h3>
+<p><strong>你现在用的这个 WorkBuddy 对话框就是入口。</strong></p>
+<p>直接在这里打字问我，比如：</p>
+<ul>
+<li>"用本机大模型回答：中国的首都是哪里？"</li>
+<li>"对比一下本机 5 个模型回答'什么是通货膨胀'，哪个最好？"</li>
+<li>"跑一下微调实验，看看 loss 怎么降"</li>
+</ul>
+<p>我会调用你本机的模型，把真实输出贴给你。<strong>不用碰终端、不用敲命令。</strong></p>
+<h3 id="_4">方式二：双击图形界面（不用终端）</h3>
+<p>在访达（Finder）里打开本仓库的 <code>AI起步/</code> 文件夹（路径见上方仓库目录）。</p>
+<p><strong>双击 <code>AI对话台.app</code></strong> —— 会弹出一个窗口，里面有输入框、模型下拉框、温度滑块。</p>
+<ul>
+<li>输入框打字提问，回车发送；<strong>从别处复制的文字可以直接 ⌘V 粘贴</strong>，灰字提示会自动消失</li>
+<li>复制了一整段看不懂的文字？点「🔍 解释剪贴板内容」，AI 会用大白话解释它</li>
+<li>想存下回答？点「📄 复制全部对话」，或者在对话记录上右键复制</li>
+<li>右上角换模型</li>
+<li>拖滑块调"发挥空间"（温度）</li>
+<li>点「五模型对比」按钮，让几个模型回答同一问题</li>
+</ul>
+<p><strong>这个窗口也能用命令，跟终端版一样，但完全不用开终端。</strong></p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/帮助</code></td>
+<td>在窗口里列出所有命令</td>
+</tr>
+<tr>
+<td><code>/模型 qwen2.5:0.5b</code></td>
+<td>换模型；不加名字就列出可用的</td>
+</tr>
+<tr>
+<td><code>/温度 1.2</code></td>
+<td>调「发挥空间」，0~2</td>
+</tr>
+<tr>
+<td><code>/长度 300</code></td>
+<td>限制回答长度</td>
+</tr>
+<tr>
+<td><code>/对比 你的问题</code></td>
+<td>几个模型回答同一问题，后面也可加模型名</td>
+</tr>
+<tr>
+<td><code>/历史</code></td>
+<td>看最近的聊天</td>
+</tr>
+<tr>
+<td><code>/清空</code></td>
+<td>清空聊天记录</td>
+</tr>
+<tr>
+<td><code>/退出</code></td>
+<td>关掉窗口</td>
+</tr>
+</tbody>
+</table>
+<p>命令以 <code>/</code> 开头，全部在本机执行，不会发给 AI。输入 <code>/乱码</code> 也只会得到一条提示。</p>
+<h3 id="_5">方式三：终端版（想看底层原理时用）</h3>
+<p>打开 Mac 的「终端」应用（启动台里搜"终端"），粘贴这一行：</p>
+<pre><code class="language-bash">bash AI起步/上课.sh
+</code></pre>
+<p>然后会出现一个菜单，输入课号（1–7）就能上课。</p>
+<pre><code>╔══════════════════════════════════════════════════════════════╗
+║                    《AI 起步》学习课程                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+  ★ 对话台  自己一行行敲着玩（最推荐先玩这个）
+  ★ 上手手册  三条亲手验证的路径（curl / Python）
+
+  第 0 课  自由提问（自己动手打字问 AI）
+  第 1 课  大模型是什么？（不用写代码，先建立直觉）
+  第 2 课  第一次让电脑回答你（10 分钟看到结果）
+  ...
+  请输入课号：
+</code></pre>
+<p><strong>建议从第 0 课开始</strong>——它让你自己动手打字提问，最快建立"我能让电脑回答我"的实感。</p>
+<hr />
+<h2 id="_6">想立刻自己动手？三条上手路径</h2>
+<p>课程是"讲解"，但大模型这门学问必须<strong>亲手敲</strong>才记得住。菜单里有两个入口：</p>
+<table>
+<thead>
+<tr>
+<th>入口</th>
+<th>做什么</th>
+<th>适合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>对话台</strong></td>
+<td>像聊天一样一行行敲，还能 <code>/模型</code> 换模型、<code>/温度</code> 调参数、<code>/对比</code> 让模型回答同一问题</td>
+<td>想先玩起来</td>
+</tr>
+<tr>
+<td><strong>上手手册</strong></td>
+<td>三条路径（终端 curl / Python 交互 / 对话台）逐个带你走，每步真执行真看结果</td>
+<td>想看清背后</td>
+</tr>
+</tbody>
+</table>
+<p><strong>对比功能怎么用（重点）</strong></p>
+<p>图形界面里点「五模型对比」会弹出���个窗口：</p>
+<ul>
+<li>上面的大输入框里<strong>写你想问什么</strong>（不限于任何预设问题），也可以 ⌘V 粘贴，或点「📋 粘贴剪贴板里的问题」；</li>
+<li>灰字只是提示，不是真问题：一开始打字或粘贴它就消失；<strong>只有留空时</strong>才对比最近问过的问题；</li>
+<li>下面<strong>勾选要对比哪几个模型</strong>（全选就是全部，也可以只勾 2 个）；</li>
+<li>拖滑块可以单独给这次对比设温度；</li>
+<li>点「开始对比」，每个模型的回答依次显示出来。</li>
+</ul>
+<p><strong>你粘贴什么就对比什么</strong>——不会再跑出预设的货币问题。</p>
+<p>终端版对应命令：</p>
+<pre><code>/对比 你的问题                     # 对比全部 5 个模型
+/对比 你的问题 qwen2.5:3b-instruct qwen3-8b-v4flash:flash   # 只对比指定的
+/对比                               # 不带参数 = 用你最近问过的问题
+</code></pre>
+<p><strong>最推荐的验证方式</strong>——用 <code>/对比</code> 问一个有深度的问题：</p>
+<pre><code>你&gt; /对比 用一句话解释什么是通货膨胀
+</code></pre>
+<p>你会看到 5 个模型分别回答。9B/8B 的准确详尽，<strong>0.5B 的会自相矛盾</strong>（"购买力下降"又说"购买力增加"）。
+这就是"模型越大越强"最直观的证据——不用信任何人的说法，自己看一眼。</p>
+<p>完整的三条路径说明见 <code>《上手实验手册》.md</code>，或直接看电子书里的对应章节。</p>
+<p><strong>每课都可以重复上</strong>。学明白为止，不用赶进度。</p>
+<hr />
+<h2 id="0">第 0 课：自由提问（先玩这个）</h2>
+<p>这是唯一一个<strong>你要自己动手</strong>的课。它会让你：</p>
+<ol>
+<li>在终端里输入任何问题，模型当场回答</li>
+<li>同一个问题用不同"温度"问两次，亲眼对比差别</li>
+<li>让模型起 4 个奶茶店名字，看它每次都不一样</li>
+</ol>
+<pre><code>  你的问题&gt; 为什么天空是蓝色的？
+  ────────────────────────────────────────────────────────
+  AI: 天空呈现蓝色主要是由于大气散射现象，特别是瑞利散射……
+</code></pre>
+<p><strong>在这之后</strong>，课程里出现的"我输入：xxx"都是脚本写死的固定问题——不需要你打字。想自己提问随时回第 0 课。</p>
+<hr />
+<h2 id="_7">七课地图</h2>
+<table>
+<thead>
+<tr>
+<th>课</th>
+<th>主题</th>
+<th>你会学到</th>
+<th>用时</th>
+<th>要写代码吗</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td>自由提问</td>
+<td><strong>自己动手打字问 AI</strong>，感受温度对回答的影响</td>
+<td>10 分钟</td>
+<td>不用</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td>大模型是什么</td>
+<td>它是"接话高手"、怎么一个词一个字往外写、为什么会胡说</td>
+<td>10 分钟</td>
+<td>不用</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>第一次对话</td>
+<td>把话说全、给模型派岗、让它先想、给个例子</td>
+<td>15 分钟</td>
+<td>不用</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>怎样把话说得更准</td>
+<td>提示词 6 零件、格式怎么钉死、AI 写错了怎么掰</td>
+<td>15 分钟</td>
+<td>不用</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>读懂模型输出</td>
+<td>token 与计费、上下文窗口、logits 和温度</td>
+<td>12 分钟</td>
+<td>少量</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>教模型你的知识</td>
+<td>微调在改什么、LoRA 原理、亲手训一个模型</td>
+<td>25 分钟</td>
+<td>有，逐行讲解</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>改掉模型记错的知识</td>
+<td>知识编辑、可靠性 vs 局部性、什么时候该用哪招</td>
+<td>12 分钟</td>
+<td>有</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>给 AI 内容盖戳</td>
+<td>水印原理、绿名单、z-score、检测与反检测</td>
+<td>15 分钟</td>
+<td>有</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议节奏</strong>：每天一课，一周学完。第 5 课内容最多，可以拆成两天。</p>
+<hr />
+<h2 id="_8">每课长什么样</h2>
+<p>每课都遵循同一个结构，你可以形成习惯：</p>
+<ol>
+<li><strong>先讲概念</strong>——用大白话讲清楚，不用术语堆砌</li>
+<li><strong>再做实验</strong>——马上动手看效果，不空谈</li>
+<li><strong>再看代码</strong>（如果有）——逐行解释，每行都有中文注释</li>
+<li><strong>最后小结</strong>——提炼本课要记住的几句话</li>
+</ol>
+<p>所有代码文件都在：</p>
+<pre><code>AI起步/
+├── AI对话台.app         ← ★ 双击这个！图形界面，不用终端
+├── 上课.sh              ← 终端版课程入口
+├── 对话台.py             ← 终端版交互对话台
+├── 上手手册.py           ← 终端版上手引导
+├── AI工具箱.py           ← 公共工具（不用读）
+├── 第0课_自由提问.py     ← 自己动手打字问 AI
+├── 第1课_大模型是什么.py
+├── 第2课_第一次对话.py
+├── 第3课_提示词.py
+├── 第4课_读懂输出.py
+├── 第5课_微调.py
+├── 第6课_知识编辑.py
+└── 第7课_水印.py
+</code></pre>
+<hr />
+<h2 id="_9">遇到问题怎么办</h2>
+<h3 id="_10">常见报错对照表</h3>
+<table>
+<thead>
+<tr>
+<th>屏幕上出现</th>
+<th>意思</th>
+<th>怎么办</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AI 引擎没有运行</code></td>
+<td>Ollama 没启动</td>
+<td>另开一个终端窗口，输入 <code>ollama serve</code>，回车，<strong>别关掉这个窗口</strong></td>
+</tr>
+<tr>
+<td><code>ModuleNotFoundError</code></td>
+<td>依赖没装全</td>
+<td>运行 <code>bash AI起步/安装环境.sh</code></td>
+</tr>
+<tr>
+<td><code>Connection refused</code></td>
+<td>同上，引擎没起</td>
+<td>见第一行</td>
+</tr>
+<tr>
+<td><code>model not found</code></td>
+<td>模型没下载</td>
+<td>运行 <code>ollama pull qwen2.5:3b-instruct</code></td>
+</tr>
+<tr>
+<td><code>Killed</code> / 进程突然消失</td>
+<td>内存不够</td>
+<td>关掉一些程序再试；或换小模型 <code>qwen2.5:0.5b</code></td>
+</tr>
+<tr>
+<td><code>loss</code> 变成 <code>nan</code></td>
+<td>学习率太大</td>
+<td>改成 <code>1e-4</code> 或更小</td>
+</tr>
+<tr>
+<td>中文全是乱码</td>
+<td>用了英文模型</td>
+<td>本教程已避开；若出现说明走错了课</td>
+</tr>
+<tr>
+<td>双击 .app 没反应</td>
+<td>macOS 安全拦截</td>
+<td>右键点它 → 选「打开」→ 再点「打开」</td>
+</tr>
+<tr>
+<td>窗口显示"找不到引擎"</td>
+<td>Ollama 没开</td>
+<td>见窗口里的提示，或直接在 WorkBuddy 里问我</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_11">卡住了怎么办</h3>
+<ul>
+<li><strong>第 1 课</strong>卡住 → 检查终端里有没有报错，把报错文字记下来</li>
+<li><strong>第 5 课</strong>卡住 → 训练本身只需十几秒，如果卡住多半是模型在下载（第一次会慢）</li>
+<li><strong>任何课</strong>卡住 → 直接跳过，回头再来。<strong>别在一课上耗超过一小时</strong></li>
+</ul>
+<h3 id="_12">想找人问</h3>
+<ul>
+<li>每个课脚本的开头都写了这一课的"一句话总结"</li>
+<li>七课的完整讲解都在本手册 + 脚本注释里</li>
+<li>进阶内容参考《动手学大模型》原书（在 <code>M4学习包/</code> 目录）</li>
+</ul>
+<hr />
+<h2 id="_13">七课速查卡</h2>
+<p>打印出来贴在显示器旁边。</p>
+<h3 id="1">第 1 课：大模型是什么</h3>
+<pre><code>大模型只会做一件事：接着往下写字。
+它写的时候，按&quot;每个词的概率&quot;一个一个挑。
+温度控制发挥空间：低=稳，高=野。
+它的知识来自训练时读过的海量文本。
+所以它会一本正经地胡说——涉及事实必须核对来源。
+</code></pre>
+<h3 id="2">第 2 课：提问四心法</h3>
+<pre><code>1. 把话说全 —— 去哪儿、几天、什么预算、给谁看。
+2. 给它派个岗 —— 用&quot;你是…&quot;开头。
+3. 复杂问题让它先想 —— 加&quot;请一步一步思考&quot;。
+4. 要什么格式就给个例子 —— 比描述有效十倍。
+</code></pre>
+<h3 id="3-6">第 3 课：提示词 6 零件</h3>
+<pre><code>① 角色  你是谁
+② 任务  要做什么
+③ 背景  给谁看、什么场景
+④ 输入材料  粘贴原文/数据
+⑤ 输出要求  格式、长度、语言、语气、不要什么
+⑥ 示例  贴一个你想要的输出样本
+
+AI 写错了 → 指出具体问题 + 说清要什么
+（不要说&quot;不对，重来&quot;，它会乱猜）
+</code></pre>
+<h3 id="4">第 4 课：技术速查</h3>
+<pre><code>token      模型处理文字的最小单位，API 按它计费
+           中文 1 字 ≈ 0.6~1.5 token
+           英文 1 词 ≈ 1.3 token（更省）
+上下文窗口 一次能看的文字总量，超了报错或静默截断
+           塞太多资料反而效果变差，给 3~5 段最相关的
+logits     模型给每个候选词打的原始分（可为负）
+softmax    把分数变成概率的一步
+温度       写代码 0.2 / 日常聊天 0.7 / 创意 1.0 / 别超 1.5
+</code></pre>
+<h3 id="5">第 5 课：微调流程</h3>
+<pre><code>准备数据（问答对）→ 格式化成聊天模板 → 加载模型
+→ 装 LoRA 补丁 → 设置参数 → 训练 → 保存 → 验证
+
+LoRA：只训 0.1% 参数（加在 q_proj/v_proj 旁的低秩矩阵）
+数据量决定上限：20~50 条=演示，几百条=风格，几千条=专业能力
+loss 下降=有效，loss=nan=学习率太大
+</code></pre>
+<h3 id="6">第 6 课：出错了用哪招</h3>
+<pre><code>① 换更强的模型 / 加上下文    （最便宜，先试）
+② RAG 检索增强              （知识要准确时）
+③ 微调                      （改风格/口径/能力）
+④ 知识编辑                  （只改一条具体事实，秒级）
+⑤ 重训                      （换架构，最后考虑）
+
+知识编辑看两个指标：可靠性（改对了吗）+ 局部性（伤到别人了吗）
+</code></pre>
+<h3 id="7">第 7 课：水印</h3>
+<pre><code>原理：词表分绿/红名单，生成时按隐藏规则偏置，检测时看 z-score
+z-score &gt; 4 基本可判定有水印
+强度 0.25~0.5 是甜点区（太弱检不出，太强文本生硬）
+弱点：怕改写和翻译，短文本检不准
+</code></pre>
+<hr />
+<h2 id="_14">学完之后</h2>
+<p>你已经能：</p>
+<ul>
+<li>看懂 AI 在做什么、知道它的能力边界在哪</li>
+<li>自己动手训模型、改模型、检测 AI 文本</li>
+<li>判断一个 AI 项目该用什么技术、什么硬件</li>
+<li>不再被术语唬住</li>
+</ul>
+<p><strong>想继续深入</strong>，往这三个方向走：</p>
+<ol>
+<li>
+<p><strong>RAG（检索增强）</strong>——目前企业落地最主流。原理是：资料存进向量库，提问时先检索出相关的，再连同问题一起给模型。学到这个，你的 AI 就能真正处理自己的资料了。</p>
+</li>
+<li>
+<p><strong>《动手学大模型》原书</strong>——11 章完整实验，包括多模态、强化学习、GUI 智能体。在 <code>M4学习包/</code> 目录，有电子书版本。</p>
+</li>
+<li>
+<p><strong>动手做个小项目</strong>——把你手头一件真实的事交给 AI：
+   - 整理一批文档 → 学 RAG
+   - 让 AI 按你的口径回答 → 学微调
+   - 批量生成文案 → 学提示词 + API 调用</p>
+</li>
+</ol>
+<hr />
+<p><em>本教程的所有实验均在 Apple M4 Mac mini（16GB）上实测通过。运行过程中如遇异常，欢迎把报错信息反馈。</em></p>
+<hr />
+<h1 id="_15">上手实验手册 · 自己动手验证</h1>
+<blockquote>
+<p>每一课的概念讲解之外，这里教你<strong>亲手敲命令看到结果</strong>。
+不是"运行脚本看它打印什么"，而是你自己控制每一步。</p>
+</blockquote>
+<hr />
+<h2 id="_16">你的三条上手路径</h2>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>适合谁</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. 对话台</strong>（推荐先玩这个）</td>
+<td>想跟 AI 聊天、换模型、调参数</td>
+<td>⭐ 最简单</td>
+</tr>
+<tr>
+<td><strong>B. 终端 curl 命令</strong></td>
+<td>想看清背后到底发生了什么</td>
+<td>⭐⭐ 中等</td>
+</tr>
+<tr>
+<td><strong>C. Python 交互模式</strong></td>
+<td>想自己写代码控制每一步</td>
+<td>⭐⭐⭐ 有点挑战</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="a">路径 A：对话台（最快上手）</h2>
+<h3 id="1_1">第 1 步：打开终端</h3>
+<p>Mac 的「启动台」→ 搜"终端"（Terminal）→ 点开。窗口里是一行光标在闪。</p>
+<h3 id="2_1">第 2 步：复制这一行，粘贴，回车</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python AI起步/对话台.py
+</code></pre>
+<p>看到这样的画面就对了：</p>
+<pre><code>============================================================
+ 交互式对话台 · 自己敲着玩
+============================================================
+ 本机可用模型：qwen3.5-9b-v4flash:flash, qwen3-8b-v4flash:flash, ...
+ 当前模型：qwen2.5:3b-instruct   温度：0.7
+ 输入 /帮助 看命令，输入 /退出 离开
+</code></pre>
+<h3 id="3">第 3 步：自己敲问题</h3>
+<p>看到 <code>你&gt;</code> 这个提示符，说明可以输入了。<strong>直接打字，回车</strong>：</p>
+<pre><code>你&gt; 中国的首都是哪里？只回答城市名。
+AI&gt; 北京
+</code></pre>
+<h3 id="4_1">第 4 步：亲手验证"温度"的影响</h3>
+<pre><code>你&gt; /温度 1.5
+  温度已设为 1.5
+你&gt; 中国的首都是哪里？只回答城市名。
+AI&gt; 北京
+</code></pre>
+<h3 id="5_1">第 5 步：亲手验证"换模型"的影响</h3>
+<pre><code>你&gt; /模型 qwen3-8b-v4flash:flash
+  已切换到：qwen3-8b-v4flash:flash
+你&gt; 中国的首都是哪里？只回答城市名。
+AI&gt; 北京
+</code></pre>
+<h3 id="6_1">第 6 步：最精彩的——让模型们一起回答你的问题</h3>
+<p><strong>问题随便你定</strong>，不是只能用示例里那个：</p>
+<pre><code>你&gt; /对比 帮我写一句潮汕牛肉火锅的广告语
+你&gt; /对比 用一句话解释什么是通货膨胀
+你&gt; /对比 我该学 Python 还是 Go
+</code></pre>
+<p><strong>只对比其中几个模型</strong>（把模型名跟在问题后面）：</p>
+<pre><code>你&gt; /对比 什么是AI qwen2.5:3b-instruct qwen3-8b-v4flash:flash
+</code></pre>
+<p><strong>刚问完就对比</strong>（不带参数，会用你最近问过的问题）：</p>
+<pre><code>你&gt; 我想学做潮汕卤水，需要准备什么材料？
+你&gt; /对比
+  用你最近问过的问题：我想学做潮汕卤水，需要准备什么材料？
+</code></pre>
+<p><strong>图形界面版</strong>：点「五模型对比」会弹出一个窗口，上面输入框显示的是<strong>灰色提示</strong>（不是真问题），
+你可以直接 ⌘V 粘贴自己的问题，或点「📋 粘贴剪贴板里的问题」；灰字在你打字/粘贴时自动消失。
+下面是模型勾选框（可只勾 2 个），还能单独给这次对比调温度。
+只有你<strong>什么都不填</strong>直接点开始，才会对比最近问过的问题。</p>
+<p>你会看到五个模型分别回答：</p>
+<pre><code>【qwen3.5-9b-v4flash:flash】
+  通货膨胀是指由于货币供应量过多，导致单位货币购买力下降、整体物价水平持续普遍上涨的经济现象。
+
+【qwen2.5:0.5b】
+  通货膨胀是指一种货币贬值或价格飞升的情况，导致购买力下降，消费者购买力增加。
+  ↑ 注意这里！&quot;购买力下降&quot;和&quot;购买力增加&quot;自相矛盾——小模型会犯错
+</code></pre>
+<p><strong>这就是你要的验证</strong>：同一个问题，不同模型答案不同，质量也不同。名字里数字大的（9B、8B）明显更准确。</p>
+<h3 id="_17">对话台全部命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/帮助</code></td>
+<td>看所有命令</td>
+</tr>
+<tr>
+<td><code>/模型 &lt;名字&gt;</code></td>
+<td>换模型</td>
+</tr>
+<tr>
+<td><code>/温度 &lt;0~2&gt;</code></td>
+<td>调温度</td>
+</tr>
+<tr>
+<td><code>/长度 &lt;数字&gt;</code></td>
+<td>限制回答长度</td>
+</tr>
+<tr>
+<td><code>/对比 &lt;问题&gt; [模型...]</code></td>
+<td>模型回答同一问题比一比；问题随便你定，不带参数则用最近问过的问题</td>
+</tr>
+<tr>
+<td><code>/历史</code></td>
+<td>看聊天记录</td>
+</tr>
+<tr>
+<td><code>/清空</code></td>
+<td>清空记录（模型会忘掉之前说的）</td>
+</tr>
+<tr>
+<td><code>/退出</code></td>
+<td>离开</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_18">关于"多轮对话"</h3>
+<p>对话台会记住你说过的话。试这个：</p>
+<pre><code>你&gt; 我叫刘永华
+AI &gt; 好的，刘永华！有什么可以帮您的吗？
+
+你&gt; 我叫什么名字？
+AI &gt; 您叫刘永华。
+</code></pre>
+<p>注意：每问一句，前面所有内容都会重新发一遍给模型——这就是"上下文"。用 <code>/清空</code> 可以让它忘掉。</p>
+<hr />
+<h2 id="b-curl">路径 B：终端 curl 命令（看清背后）</h2>
+<p>这条路径让你看到"请求-响应"的完整过程。</p>
+<h3 id="_19">最小可用版本（直接粘贴回车）</h3>
+<pre><code class="language-bash">curl -s http://127.0.0.1:11434/api/chat -d '{
+&quot;model&quot;:&quot;qwen2.5:3b-instruct&quot;,
+&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;中国的首都是哪里？只回答城市名。&quot;}],
+&quot;stream&quot;:false,&quot;think&quot;:false
+}'
+</code></pre>
+<p>会输出一大坨 JSON，里面 <code>message.content</code> 字段就是答案：</p>
+<pre><code class="language-json">{&quot;model&quot;:&quot;qwen2.5:3b-instruct&quot;,&quot;created_at&quot;:&quot;...&quot;,&quot;message&quot;:{&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:&quot;北京&quot;},&quot;done&quot;:true}
+</code></pre>
+<h3 id="_20">拆开看每一步</h3>
+<p><strong>第 1 步：先确认模型在不在</strong></p>
+<pre><code class="language-bash">curl -s http://127.0.0.1:11434/api/tags | python3 -c &quot;import json,sys; [print(m['name']) for m in json.load(sys.stdin)['models']]&quot;
+</code></pre>
+<p>输出你的 5 个模型名字。</p>
+<p><strong>第 2 步：只把答案打印出来（加个管道过滤）</strong></p>
+<pre><code class="language-bash">curl -s http://127.0.0.1:11434/api/chat -d '{
+&quot;model&quot;:&quot;qwen2.5:3b-instruct&quot;,
+&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;中国的首都是哪里？只回答城市名。&quot;}],
+&quot;stream&quot;:false,&quot;think&quot;:false
+}' | python3 -c &quot;import json,sys; print(json.load(sys.stdin)['message']['content'])&quot;
+</code></pre>
+<p>现在只输出 <code>北京</code> 了。</p>
+<p><strong>第 3 步：改问题，改温度，改模型</strong></p>
+<p>把这几处改掉再跑：
+- <code>"content":"..."</code> 里换成你自己的问题
+- <code>"model":"qwen3-8b-v4flash:flash"</code> 换成别的模型
+- 加 <code>"options":{"temperature":1.5,"num_predict":200}</code> 调温度和长度</p>
+<p><strong>第 4 步：看逐字输出（像 ChatGPT 那样）</strong></p>
+<pre><code class="language-bash">curl -sN http://127.0.0.1:11434/api/chat -d '{
+&quot;model&quot;:&quot;qwen2.5:3b-instruct&quot;,
+&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;写一首关于海的两行诗&quot;}],
+&quot;stream&quot;:true,&quot;think&quot;:false
+}'
+</code></pre>
+<p><code>-N</code> 是关掉缓冲，所以你会看到字一个一个冒出来。</p>
+<h3 id="json">顺便理解一下这个 JSON</h3>
+<pre><code class="language-json">{
+  &quot;model&quot;: &quot;qwen2.5:3b-instruct&quot;,   ← 用哪个模型
+  &quot;messages&quot;: [                        ← 对话内容，可以有多轮
+    {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;...&quot;}  ← role: user=你, assistant=AI
+  ],
+  &quot;stream&quot;: false,                     ← true=逐字输出, false=一次性返回
+  &quot;think&quot;: false,                      ← 关掉思考过程（有些模型会先&quot;想&quot;再答）
+  &quot;options&quot;: {                         ← 可选参数
+    &quot;temperature&quot;: 0.7,                ← 发挥空间 0~2
+    &quot;num_predict&quot;: 500                 ← 最多生成多少 token
+  }
+}
+</code></pre>
+<p><strong>看懂这个 JSON，你就掌握了调用任何大模型 API 的核心</strong>——不管哪家厂商（OpenAI、通义、智谱、本地模型），套路都是这个：给模型名、给消息列表、调几个参数。</p>
+<hr />
+<h2 id="cpython">路径 C：Python 交互模式（自己写代码）</h2>
+<p>如果 A 和 B 都想通了，试这个——它让你完全掌控。</p>
+<h3 id="1_2">第 1 步：启动交互模式</h3>
+<pre><code class="language-bash">~/llm-lab/venv-m4/bin/python -i
+</code></pre>
+<p>看到 <code>&gt;&gt;&gt;</code> 提示符。</p>
+<h3 id="2_2">第 2 步：定义一个"问"函数（逐行敲，回车）</h3>
+<pre><code class="language-python">import json, urllib.request
+def 问(问题, 模型=&quot;qwen2.5:3b-instruct&quot;, 温度=0.7):
+    d = {&quot;model&quot;: 模型, &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:问题}], &quot;stream&quot;:False, &quot;think&quot;:False,
+         &quot;options&quot;:{&quot;temperature&quot;:温度,&quot;num_predict&quot;:300}}
+    r = urllib.request.Request(&quot;http://127.0.0.1:11434/api/chat&quot;,
+        data=json.dumps(d).encode(), headers={&quot;Content-Type&quot;:&quot;application/json&quot;})
+    return json.loads(urllib.request.urlopen(r, timeout=120).read())[&quot;message&quot;][&quot;content&quot;]
+</code></pre>
+<h3 id="3_1">第 3 步：调用它</h3>
+<pre><code class="language-python">问(&quot;中国的首都是哪里？只回答城市名。&quot;)
+</code></pre>
+<p>输出：<code>'北京'</code></p>
+<h3 id="4_2">第 4 步：开始做对照实验</h3>
+<pre><code class="language-python">问(&quot;用一句话解释什么是通货膨胀&quot;, 温度=0.1)
+问(&quot;用一句话解释什么是通货膨胀&quot;, 温度=1.8)
+问(&quot;用一句话解释什么是通货膨胀&quot;, 模型=&quot;qwen3-8b-v4flash:flash&quot;)
+</code></pre>
+<h3 id="5_2">第 5 步：写进文件试试</h3>
+<pre><code class="language-python">open(&quot;我的第一个ai程序.py&quot;,&quot;w&quot;).write('''
+import json, urllib.request
+def 问(问题, 模型=&quot;qwen2.5:3b-instruct&quot;):
+    d = {&quot;model&quot;:模型,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:问题}],&quot;stream&quot;:False,&quot;think&quot;:False}
+    r = urllib.request.Request(&quot;http://127.0.0.1:11434/api/chat&quot;,
+        data=json.dumps(d).encode(), headers={&quot;Content-Type&quot;:&quot;application/json&quot;})
+    return json.loads(urllib.request.urlopen(r,timeout=120).read())[&quot;message&quot;][&quot;content&quot;]
+print(问(&quot;你好&quot;))
+''')
+</code></pre>
+<p>然后：</p>
+<pre><code class="language-python">exec(open(&quot;我的第一个ai程序.py&quot;).read())
+</code></pre>
+<p><strong>退出交互模式</strong>：输入 <code>exit()</code> 回车。</p>
+<hr />
+<h2 id="_21">三个案例，在三条路径上分别验证</h2>
+<h3 id="1-1">案例 1：模型是"接话"的（第 1 课）</h3>
+<p><strong>路径 B 验证</strong>：</p>
+<pre><code class="language-bash">curl -s http://127.0.0.1:11434/api/chat -d '{
+&quot;model&quot;:&quot;qwen2.5:3b-instruct&quot;,
+&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;中国的首都是&quot;}],
+&quot;stream&quot;:false,&quot;think&quot;:false
+}' | python3 -c &quot;import json,sys; print(json.load(sys.stdin)['message']['content'])&quot;
+</code></pre>
+<p>你会发现模型<strong>接着往下写</strong>，而不是只回答"北京"。这就是"接话"的本质。</p>
+<h3 id="2-4">案例 2：温度影响发挥空间（第 4 课）</h3>
+<p><strong>路径 C 验证</strong>（最直观）：</p>
+<pre><code class="language-python">for t in [0.1, 0.7, 1.5]:
+    print(f&quot;温度 {t}:&quot;, 问(&quot;给奶茶店起个名字，要有故事感&quot;, 温度=t))
+</code></pre>
+<p>同一个问题，三种温度，三种不同的风格和长度。</p>
+<h3 id="3-6_1">案例 3：模型越大越准（第 6 课）</h3>
+<p><strong>路径 A 验证</strong>（一条命令）：</p>
+<pre><code>你&gt; /对比 用一句话解释什么是通货膨胀
+</code></pre>
+<p>注意看 0.5B 那个模型的回答有没有逻辑矛盾。</p>
+<hr />
+<h2 id="_22">亲手验证的检查清单</h2>
+<p>跑完这些，你就真的懂了：</p>
+<ul>
+<li>[ ] 用对话台问了 3 个不同的问题</li>
+<li>[ ] 用 <code>/温度</code> 调过温度，对比过同一个问题的两次回答</li>
+<li>[ ] 用 <code>/模型</code> 换过模型</li>
+<li>[ ] 用 <code>/对比</code> 看过 5 个模型回答同一个问题</li>
+<li>[ ] 用 curl 敲过一次并看懂返回的 JSON</li>
+<li>[ ] 用 Python 交互模式定义过自己的 <code>问()</code> 函数</li>
+</ul>
+<hr />
+<h2 id="_23">出错了怎么办</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Connection refused</code></td>
+<td>Ollama 没运行</td>
+<td>另开终端跑 <code>ollama serve</code></td>
+</tr>
+<tr>
+<td><code>command not found</code></td>
+<td>路径打错了</td>
+<td>用 Tab 键自动补全路径</td>
+</tr>
+<tr>
+<td>对话台打不开</td>
+<td>python 路径不对</td>
+<td>用完整路径 <code>~/llm-lab/venv-m4/bin/python</code></td>
+</tr>
+<tr>
+<td><code>model not found</code></td>
+<td>模型名拼错</td>
+<td>先跑 <code>curl -s <a href="http://127.0.0.1:11434/api/tags" target="_blank" rel="noopener">http://127.0.0.1:11434/api/tags</a></code> 看准确名字</td>
+</tr>
+<tr>
+<td>回答特别慢</td>
+<td>模型太大</td>
+<td>用 <code>/模型 qwen2.5:3b-instruct</code> 换小的</td>
+</tr>
+<tr>
+<td>中文乱码</td>
+<td>终端编码</td>
+<td>不用管，内容是正常的</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_24">下一步</h2>
+<p>亲手玩过这些之后，再回去做《AI 起步》的正式课程，
+你会发现每一步都亲手摸过，印象完全不同。</p>
+<p>课程入口：</p>
+<pre><code class="language-bash">bash AI起步/上课.sh
+</code></pre>
+<hr />
+<p><em>本文档所有命令均在本机实测通过。</em></p>
+<hr />
+<h1 id="0-ai">第 0 课 · 自由提问 · 你自己打字问 AI</h1>
+<blockquote>
+<p>脚本：<code>第0课_自由提问.py</code></p>
+</blockquote>
+<p>现在轮到你了。
+在下面输入你的问题，然后按回车（输入英文问号 ? 或直接回车跳过，用默认问题）。</p>
+<p>试试问这些：
+  · 中国最南边的省份是哪里？
+  · 用一句话解释什么是"通货膨胀"
+  · 帮我起一个奶茶店的名字
+  · 为什么天空是蓝色的？</p>
+<p>现在把温度调高到 1.2（更随机），再问一次一模一样的问题。
+看看两次回答有什么不同。</p>
+<p>温度是"发挥空间"：
+  · 温度低（0.1~0.3）→ 每次都选最稳的那个词，回答几乎一样
+  · 温度高（0.9~1.2）→ 冷门词也有机会被选，回答差异大</p>
+<p>注意：不是每次高温都一定差。有些问题（比如创意写作）高温反而更好。</p>
+<p>刚才你亲眼看到：
+  · 同一个问题，两次回答不完全一样
+  · 高温时模型更"敢发挥"，低温时更"保守"</p>
+<p>【为什么？】
+  模型不是从答案库里查，而是每生成一个词都按概率抽。
+  温度就是调这个概率分布的形状。</p>
+<p>【现在试个更明显的】
+  我们用一个"没有唯一答案"的问题，重复问 4 次，
+  每次温度都是 1.0。你会看到 4 个不同的版本。</p>
+<p>想自己试？按回车继续，或输入 q 跳过:</p>
+<p>上课命令：
+    bash AI起步/上课.sh</p>
+<p>输入 1 继续第 1 课，2~7 进入后面的课。</p>
+<p>【一句话总结】
+  温度 = 模型的发挥空间。低=保守稳定，高=多样奔放。
+  写代码和算数用低温度，聊天和创意用中温度。</p>
+<h1 id="1_3">第 1 课 · 大模型是什么？</h1>
+<blockquote>
+<p>脚本：<code>第1课_大模型是什么.py</code></p>
+</blockquote>
+<p>这一课我们会回答三个问题：
+  1. 大模型收到你的一句话后，到底做了什么？
+  2. 它是怎么"学会"说话的？
+  3. 为什么它有时候会一本正经地胡说八道？</p>
+<p>不用你写任何代码，跟着看就行。</p>
+<p>我们先给它一句开头的话，看它怎么往下接。</p>
+<p>【先解释三个词，后面会反复用到】</p>
+<p>· token（词元）：模型处理文字的最小单位。不是"字"，也不是"词"，
+  而是模型词表里的一个编号。你输入的每个字都会被切成若干个 token。
+  英文大约 1 个单词 = 1~2 个 token；中文 1 个字 ≈ 1~2 个 token。
+  （token 数也用来算 API 费用，俗称"按字计费"。）</p>
+<p>· 参数（parameter）：模型内部可以调节的"旋钮"。GPT-2 有 1.17 亿个，
+  Qwen2.5-3B 有 30 亿个。参数值最终决定了模型怎么回答。</p>
+<p>· 推理（inference）：让模型"想一遍"，生成回答的过程。
+  你每问它一个问题，它就推理一次。</p>
+<p>👆 先澄清一件容易误会的事：
+  你并没有动手打字——那句问题是写死在脚本里的（就在上面几行）。
+  脚本替你"输入"了它，然后把模型的回答打印出来。</p>
+<p>想自己动手打字提问，先跑「第 0 课 · 自由提问」，
+  那里可以输入任何你想问的东西。</p>
+<p>👆 你看到了吗？两次回答可能不一样。</p>
+<p>这就是大模型的全部秘密：它不查数据库，它只是"接着往下写字"。
+  所谓"聊天"，其实就是它写一段、你再写一段、它再接。</p>
+<p>区别于搜索引擎：搜索给你的是"找到的网页"，大模型给你的是"它写的文字"。</p>
+<p>· 温度（temperature）：控制随机性。0 最保守（永远选最可能的词），
+  2 最狂野（可能跑偏）。写代码用 0.2，头脑风暴用 1.0，翻译用 0.3。</p>
+<p>我们换个问法，看看它在"猜"什么。</p>
+<p>提示：下面这个提示词让模型自己把思考过程说出来，
+这叫"思维链"（Chain of Thought，简称 CoT），是提升 AI 回答质量最有效的技巧之一。</p>
+<p>👆 注意看它的结构：先给结论，再讲理由。</p>
+<p>大模型内部并没有"我查到了北京"这个步骤，
+  它只是算出"北京"这个词在这句话后面出现的概率最高，然后写下来。</p>
+<p>这就解释了两件事：
+  · 为什么它写得很流畅 —— 它真的懂中文语法
+  · 为什么它会编造 —— 它没在查证事实，只是在写"最像人话"的下文</p>
+<p>我们故意问一个不存在的东西（"张伟"是个虚构的人名）。
+一个负责任的 AI 应该说自己不知道。</p>
+<p>如果它编出了一个身份证号、出生日期，那就说明：
+它不是在查资料，而是在"把最像真的内容写出来"。</p>
+<p>👆 如果它编出了具体的年份和贡献，这就是"幻觉"（Hallucination）。</p>
+<p>为什么会这样？因为它的训练目标是"生成像人话的文字"，
+  而不是"保证事实正确"。它没学过"张伟"这个人，
+  但它学过"生物学家传记该怎么写"，于是照着格式编了一个。</p>
+<p>【这是使用 AI 最重要的一条认知】
+  大模型说错话时，跟人撒谎不一样 —— 它没有"故意骗你"这个概念，
+  它只是没有"我不知道"这个默认选项。</p>
+<p>所以：涉及事实、数字、日期、法律条款时，
+  一定要去原始来源核对，别信 AI 说的第一遍。</p>
+<ol>
+<li>大模型只会做一件事：接着往下写字。</li>
+<li>它写的时候，是按"每个词的概率"一个一个挑的。</li>
+<li>温度控制发挥空间：低=稳，高=野。</li>
+<li>它的知识来自训练时读过的大量文本，参数就是它记住的东西。</li>
+<li>所以它会一本正经地胡说——涉及事实时一定要核对来源。</li>
+</ol>
+<p>【下一课预告】
+  第 2 课：我们让电脑真正回答你一个问题！
+  你会学会怎么"调用"本机的大模型，怎么读懂它的回答，
+  怎么让回答质量从"能用"变成"好用"。</p>
+<p>【怎么继续】
+  运行这个命令，然后输入 2：</p>
+<p>bash AI起步/上课.sh</p>
+<h1 id="2_3">第 2 课 · 第一次让电脑回答你</h1>
+<blockquote>
+<p>脚本：<code>第2课_第一次对话.py</code></p>
+</blockquote>
+<p>欢迎。这一课我们会真正跟模型对话。</p>
+<p>先讲清楚一件事：你在浏览器里用的 ChatGPT、通义千问、Kimi，
+背后都是同一套原理——把你的话发给一个模型，把它的回答显示出来。</p>
+<p>区别只在于：
+  · 网页版：模型跑在别人的服务器上（要联网，要花钱或用额度）
+  · 今天这课：模型跑在你自己电脑上（不花钱，不联网，不外传）</p>
+<p>你自己跑模型的好处：
+  1. 隐私——你写的任何东西都不会离开这台电脑
+  2. 免费——没有 token 费用，随便折腾
+  3. 可控——能调温度、能换模型、能微调</p>
+<p>我们先问一个很平常的问题，然后逐个改进它。
+你会亲眼看到"问法"对回答质量的影响有多大。</p>
+<p>👆 你发现问题了吗？回答是"正确的"，但完全没法用。</p>
+<p>因为你没说清楚：去哪儿？几天？什么预算？什么风格？</p>
+<p>这就是使用 AI 的第一课：<strong>它不会猜你的心思，你必须把话说清楚。</strong></p>
+<p>我们把"去哪儿、几天、什么风格"都补上，再问一次。</p>
+<p>这里用到一个很重要的概念：</p>
+<p>【系统提示 / 角色设定】
+  你可以先告诉模型"你是谁、要干什么"，再问问题。
+  相当于给它派了个岗。同一段内容，用不同的岗位说出来味道完全不同。</p>
+<p>同一个问题，让模型扮演不同角色，答案完全不同。</p>
+<p>【为什么这个技巧重要】
+  · 让它当"导游"，它会讲景点故事
+  · 让它当"行程规划师"，它会给出紧凑的时间表
+  · 让它当"熊孩子"，它会更活泼</p>
+<p>在编程里同样有用——这是后面第 5 课微调的基础概念之一。</p>
+<p>【技巧 1：让它先想再答（思维链）】</p>
+<p>不加这句话时，模型直接给答案，你不知道它怎么想的；
+加上之后，它会先拆解问题再回答，准确率明显提高。</p>
+<p>适合：数学题、推理题、复杂分析、代码调试。</p>
+<p>【技巧 2：给它一个例子（少样本）】</p>
+<p>想让模型按某种格式输出时，与其描述格式，不如直接给一个例子。</p>
+<p>【技巧 3：一次问清楚，别来回挤牙膏】</p>
+<p>很多人抱怨 AI 不好用，是因为第 1 轮问得太模糊，
+然后 5 轮来回纠错。更好的做法：第 1 轮就把信息给全。</p>
+<p>你见过的 AI 对话都是"逐字显示"的（一个词一个词冒出来）。
+那是因为模型本来就是这么生成的——它每次只往前走一小步。</p>
+<p>我们直接看这个过程。</p>
+<p>👆 这就是"逐字输出"。你可以理解成：
+模型在玩一个接龙游戏，每个字都接在前面所有字的后面。
+接龙接得多了，自然就成了通顺的一段话。</p>
+<ol>
+<li>把话说全 —— 去哪儿、几天、什么预算、给谁看。</li>
+<li>给它派个岗 —— 用"你是…"开头，它会立刻进入状态。</li>
+<li>复杂问题让它先想 —— 加一句"请一步一步思考"。</li>
+<li>要什么格式就给个例子 —— 比描述格式有效十倍。</li>
+</ol>
+<p>【这一课你实际用到的技术】
+  · 系统提示（角色设定）· 思维链 CoT · 少样本示例 · 温度 · 逐字流式输出</p>
+<p>【下一课预告】
+  第 3 课：怎样把话说得更准。
+  同一件事，好提问和差提问的差距有多大；我们还会拆解一个
+  好提示词的结构，让你以后能自己组装。</p>
+<p>【怎么继续】
+  bash AI起步/上课.sh   然后输入 3</p>
+<h1 id="3_2">第 3 课 · 怎样把话说得更准</h1>
+<blockquote>
+<p>脚本：<code>第3课_提示词.py</code></p>
+</blockquote>
+<p>上一课你发现"问法"决定输出质量。这一课我们把它变成技术。</p>
+<p>核心结论先给你：一个好提示词 = 6 个零件。
+你只要把这 6 个格子填满，输出质量会有质的飞跃。</p>
+<p>【零件 1：角色】你是谁
+  "你是一位有 20 年经验的儿科医生"
+  作用：决定用词风格、专业深度、关注点。</p>
+<p>【零件 2：任务】要做什么
+  "帮我写一封邮件"
+  作用：最核心的一句，别绕弯子。</p>
+<p>【零件 3：背景】给谁看、在什么场景
+  "收件人是我的客户，语气要礼貌但不能生硬"
+  作用：决定分寸。</p>
+<p>【零件 4：输入材料】要处理的具体内容
+  "以下是会议记录：..."
+  作用：有原文就贴原文，别让模型猜。</p>
+<p>【零件 5：输出要求】格式、长度、语言
+  "用 3 个要点回答，每个不超过 30 字，用中文"
+  作用：这条最容易被忽略，也最容易决定"能不能直接用"。</p>
+<p>【零件 6：示例】给它看个样儿（可选但强烈推荐）
+  "像这样：输入 xxx → 输出 yyy"
+  作用：比任何形容词都有效。</p>
+<p>👆 同样一台电脑、同一段材料：
+  回答 A 是一段话，你得自己再加工一遍才能用；
+  回答 B 直接就是能贴进周报的样子。</p>
+<p>【记住这个道理】
+  你花的每一分钟在写清楚需求，省下的都是后面十次的返工。</p>
+<p>上一课你看到模型很听话。但真实情况是：<strong>同样的问题，多跑几次格式可能不一样。</strong></p>
+<p>这在要批量处理数据时是灾难。我们要学会把它"钉死"。</p>
+<p>👆 差别很明显：不加约束时模型可能写标题、加解释、用英文；
+  加了"硬性格式要求"之后，每次输出都是可以直接入库的干净数据。</p>
+<p>【三条让格式变稳的技巧】
+  1. 说"必须"、"严格"、"只输出"，这些词本身就在加强语气
+  2. 给出正例（一个你想要的输出样本），比描述更有效
+  3. 温度调低到 0.2~0.3</p>
+<p>实战中，AI 第一次写的东西很少直接能用。关键是"怎么改"。</p>
+<p>【三种改法，从好到差】</p>
+<p>改法 1（最好）：指出具体问题 + 说清你要什么
+      "第 2 条太笼统了，请具体说明是哪个配置文件、是哪个字符"</p>
+<p>改法 2（可用）：给它一个反例
+      "不对，我要的是这种：xxx。你再写一版。"</p>
+<p>改法 3（最差）："不对，重来" + 不说哪里不对
+      模型会乱猜，可能离原问题越来越远。</p>
+<p>我们看个实际对比。</p>
+<p>👆 改法 1 明显更好。</p>
+<p>【核心心法】
+  AI 不理解"你不喜欢"，但它非常理解"把第 2 段改成……"。
+  和 AI 沟通，要像跟一个新来的实习生交代任务——具体、明确、可检查。</p>
+<p>实战中，每次从零写提示词太慢。最好的做法是：沉淀成模板。</p>
+<p>我给你一张通用模板（存在你的脑子里，或者存进备忘录）：</p>
+<p>────────────────────────────────────────────
+  通用提示词模板
+────────────────────────────────────────────</p>
+<p>你是【角色/身份】。</p>
+<p>任务： 【要做什么，一句话说清】</p>
+<p>背景： 【给谁看、什么场景、有什么限制】</p>
+<p>输入材料：
+  【粘贴原文/数据，没有就写"无"】</p>
+<p>输出要求：
+  · 格式：【表格/列表/JSON/纯文本】
+  · 长度：【多少字/几条】
+  · 语言：【中文/英文】
+  · 语气：【专业/口语/严肃】
+  · 不要：【明确排除的内容，如"不要解释"、"不要客套"】</p>
+<p>示例（如有）：
+  【贴一个你想要的输出样本】
+────────────────────────────────────────────</p>
+<p>【什么时候用哪个零件】
+  · 一次性任务 → 随便拼，能用就行
+  · 天天重复的任务 → 存成模板，每次填空
+  · 要给别人用 → 写清"不要做什么"，比写清"要做什么"更重要</p>
+<ol>
+<li>好提示词有 6 个零件：角色、任务、背景、输入材料、输出要求、示例。</li>
+<li>输出格式不稳时，用"必须/严格/只输出"+ 正例 + 低温来钉死。</li>
+<li>AI 写错了，指出具体问题比说"不对"有效十倍。</li>
+<li>重复的任务，沉淀成模板。</li>
+</ol>
+<p>【下一课预告】
+  第 4 课：读懂模型输出的东西。
+  你会知道 token、上下文窗口、logits 这些词到底是什么意思——
+  这些直接决定你的 API 账单和回答质量上限。</p>
+<p>【怎么继续】
+  bash AI起步/上课.sh   然后输入 4</p>
+<h1 id="4_3">第 4 课 · 读懂模型输出的东西</h1>
+<blockquote>
+<p>脚本：<code>第4课_读懂输出.py</code></p>
+</blockquote>
+<p>这一课有点偏"内功"，但非常值得。</p>
+<p>因为理解了这些，你才会：
+  · 知道自己每次调用花了多少钱
+  · 知道为什么"塞太多内容"反而变差
+  · 知道该在什么时候调什么参数
+  · 不再被各种术语唬住</p>
+<p>【token 是什么】
+  模型处理文字的最小单位。你输入的每个字都会被切成若干 token，
+  每个 token 在模型内部是一个编号。</p>
+<p>【为什么要关心】
+  1. 所有大模型 API 都按 token 计费（输入算钱，输出也算钱，通常输出更贵）
+  2. token 数有上限，超了就报错
+  3. 同样的意思，不同写法 token 数差很多</p>
+<p>【怎么估算】
+  中文：1 个汉字 ≈ 0.6~1.5 个 token
+  英文：1 个单词 ≈ 1.3 个 token
+  数字和标点也会占 token</p>
+<p>我们用你的 Ollama 实际测一下。</p>
+<p>👆 注意看这张表，它和很多人的直觉相反：
+  · 英文反而更省（一个单词通常就是一个 token，"the quick brown fox" 9个词才 10 个 token）
+  · 中文一个字要 1~2 个 token
+  · 数字和标点最"贵"（"¥1234.56" 这种要 30 个 token 才装下 35 个字符）</p>
+<p>所以"用中文写提示词更省钱"是误解。真正省钱的做法是删废话。</p>
+<p>【省钱小技巧】
+  1. 删掉没用的废话（"请帮我""谢谢""我想了解一下"这些都占 token）
+  2. 长的参考资料不要每次重发，让它先总结一次再问
+  3. 简单任务用小模型，复杂任务才上大模型</p>
+<p>【上下文窗口（context window）】
+  模型一次能"看到"的文字总量上限。包括：
+    你的系统提示 + 你的问题 + 模型的回答 + 历史对话记录</p>
+<p>【超了会怎样】
+  · 报错（"context length exceeded"）
+  · 或者：开头的内容被悄悄丢掉（更危险，你可能不知道）</p>
+<p>【各模型大概多大】
+  · qwen2.5:3b      ≈ 32K token
+  · qwen3-8b        ≈ 32K token
+  · 网上大模型      常见 128K ~ 200K token</p>
+<p>【一个反直觉的事实】
+  塞更多资料 ≠ 效果更好。资料太多时，
+  模型会"抓不住重点"（这叫 lost in the middle 现象）。</p>
+<p>实测建议：一次给 3~5 段最相关的材料，比给 50 段效果更好。</p>
+<p>【logits 是什么】
+  模型每生成一个词之前，会先给词表里 EVERY 一个词打一个分（原始分数），
+  这个分数数组就叫 logits。</p>
+<p>【它怎么变成最终输出】
+  1. 模型算出每个词的 logits（原始分，可能正可能负）
+  2. 变成概率：除以一个总和，让所有词的概率加起来 = 1
+  3. 温度调节这个分布的"陡峭程度"：
+     · 温度低 → 概率分布变尖，最高分的词几乎必选
+     · 温度高 → 分布变平，冷门词也有机会被选中
+  4. 按概率随机抽一个词（这就是 do_sample=True）</p>
+<p>【看一个真实例子】
+  我们让模型接着写"中国的首都是"，看看它给"北京"打了多少分。</p>
+<p>👆 温度越高，概率分布越平，"第一名"的优势越小。</p>
+<p>【实用对照表】
+  写代码、算数、翻译  → 温度 0.1 ~ 0.3
+  日常问答、写作     → 温度 0.6 ~ 0.8
+  头脑风暴、起名     → 温度 0.9 ~ 1.2
+  绝对不要超过 1.5   → 会开始胡言乱语</p>
+<p>【token / 词元】
+  模型处理文字的最小单位。所有 API 按它计费。
+  中文 1 字 ≈ 0.6~1.5 token，英文 1 词 ≈ 1.3 token。</p>
+<p>【上下文窗口 / context window】
+  模型一次能"看到"的文字总量上限。超了就报错或静默截断。</p>
+<p>【logits】
+  模型给每个候选词打的原始分数。可以是负数，是概率取对数后的值。</p>
+<p>【softmax】
+  把一堆分数变成概率的一步操作，让所有概率加起来等于 1。</p>
+<p>【温度 / temperature】
+  调节概率分布陡峭程度。低温保守，高温奔放。</p>
+<p>【参数 / parameter】
+  模型内部可调节的"旋钮"。3B 表示 30 亿个。
+  参数越多，一般能力越强，但需要的内存也越多。</p>
+<p>【推理 / inference】
+  让模型"想一遍"生成回答。你每问一次就是一次推理。</p>
+<p>【微调 / fine-tuning】
+  用你自己的数据继续训练已有的模型，让它更懂你的领域。
+  下一课会亲手做。</p>
+<p>【量化 / quantization】
+  把模型权重从 16 位压到 4 位或 8 位，省内存，代价是精度略降。
+  （你在 Ollama 里用的模型基本都是量化版）</p>
+<ol>
+<li>按 token 计费，中文比英文贵，删废话就是省钱。</li>
+<li>上下文有上限，而且塞太多反而效果变差。</li>
+<li>logits 是原始打分，softmax 把它变成概率，温度调节分布形状。</li>
+<li>记住这张表：写代码 0.2、聊天 0.7、创意 1.0。</li>
+</ol>
+<p>【下一课预告】
+  第 5 课：教模型你自己的知识。
+  这是很多人以为"AI 很难"的那一课，但你会发现：
+  在你这台 16GB 的电脑上，用一种叫 LoRA 的轻量方法，
+  十几分钟就能训出一个懂你业务的模型。</p>
+<p>【怎么继续】
+  bash AI起步/上课.sh   然后输入 5</p>
+<h1 id="5_3">第 5 课 · 教模型你自己的知识（微调）</h1>
+<blockquote>
+<p>脚本：<code>第5课_微调.py</code></p>
+</blockquote>
+<h2 id="_25">先说清楚：微调是什么</h2>
+<p>【一个比喻】
+  预训练模型像一个"读过整个图书馆但没带脑子上班"的通才。
+  微调就是给它做一次"岗前培训"——用你领域的资料重新教一遍。</p>
+<p>【具体在改什么】
+  模型内部有几十亿个"旋钮"（参数）。微调就是调整其中一小部分，
+  让它在你这个领域上表现更好。</p>
+<p>【三种做法，代价差很远】
+  1. 全参微调：改所有旋钮。效果好，但显存要装得下整个模型 + 优化器状态。
+  2. LoRA：只训练几万分之一的旋钮（加在旁边的"补丁"），显存省几十倍。
+  3. 提示工程（第 2、3 课）：不改模型，只在每次提问时多说几句。</p>
+<p>→ 今天我们用 LoRA。这是消费级电脑跑微调的标准做法。</p>
+<p>【微调的输入是什么？】
+  不是"文档"，而是"问答对"。每一组数据长这样：</p>
+<pre><code>  问：你的问题
+  答：期望的回答
+</code></pre>
+<p>模型会反复看这些问答对，然后调整自己的旋钮，
+  让它遇到类似问题时倾向于给出你教它的答案。</p>
+<p>【数据量的现实】
+  · 20~50 组：够做个小演示，效果看得见
+  · 几百组：能形成稳定风格
+  · 几千组以上：才谈得上真正的"专业能力"</p>
+<p>所以别指望 5 条数据就能让模型变聪明——那只是让它学会你的格式。</p>
+<p>【我们现在准备什么】
+  下面这 10 组潮汕美食的问答。</p>
+<p>我们先问模型一个训练集里的问题，看看它现在的水平。
+这样训练完才有对比。</p>
+<p>👆 通用大模型可能答得不错，但答的是"网上常见说法"，
+  不一定是你想要的那套口径（比如它可能说"福建也有类似做法"）。</p>
+<p>微调能做的，就是让它按你的口径说话。</p>
+<p>接下来是代码。我把每一块都拆开讲，你先看逻辑，再看代码。</p>
+<p>【整体流程图】</p>
+<p>原始模型 (Qwen2.5-0.5B)
+         ↓  加装 LoRA 适配器（冻结原模型，只训补丁）
+  可训练模型
+         ↓  用你的问答对反复训练
+  训练后的模型 (原模型 + 学到的补丁)
+         ↓  保存补丁
+  以后用的时候：加载原模型 + 加载补丁 → 就是你的专属模型</p>
+<p>import torch
+   from datasets import Dataset
+   from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
+   from peft import LoraConfig, get_peft_model</p>
+<p>torch          —— 深度学习框架，负责所有计算（PyTorch）
+   Dataset        —— 存放训练数据
+   AutoTokenizer  —— 分词器，把文字切成 token
+   AutoModel...   —— 模型加载器
+   TrainingArguments —— 训练参数（学几遍、学多少、什么学习率…）
+   Trainer        —— 训练器，负责跑整个训练循环
+   LoraConfig     —— LoRA 配置（补丁装在哪、多大）
+   get_peft_model —— 把 LoRA 补丁装到模型上</p>
+<p>原始数据是"问/答"两个字段，但模型需要的是一段纯文本。
+   所以要做一次"格式化"：</p>
+<p>问：潮汕牛肉丸是什么？
+   答：潮汕牛肉丸是汕头特产……</p>
+<p>↓ 格式化 ↓</p>
+<p>### 指令:
+   潮汕牛肉丸是什么？
+   ### 回答:
+   潮汕牛肉丸是汕头特产……</p>
+<p>这个 ### 标记叫"聊天模板"（chat template），
+   是模型训练时约定的格式。必须和模型原本的格式一致，否则效果打折。</p>
+<p>model = AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float32).to("mps")</p>
+<p>from_pretrained  —— 从硬盘把模型读进内存
+   dtype=torch.float32 —— 用 32 位精度存（精度最高但最占内存；本课用小模型没关系）
+   .to("mps")       —— 搬到 Apple 显卡上跑
+   "mps" 是 PyTorch 在 Apple Silicon 上的加速后端</p>
+<p>lora_config = LoraConfig(
+       r=8,                        # 补丁的"秩"，可调，8 足够
+       lora_alpha=16,              # 缩放系数，一般是 r 的 2 倍
+       lora_dropout=0.05,          # 随机丢弃一点，防过拟合
+       target_modules=["q_proj", "v_proj"],   # 补丁装在哪两层
+       task_type="CAUSAL_LM",      # 因果语言模型任务
+   )
+   model = get_peft_model(model, lora_config)</p>
+<p>【什么是"秩 r"】
+     想象模型里有一层很大的矩阵（比如 2048×2048）。
+     LoRA 的做法是：不改它，而在旁边加两个瘦长的小矩阵（2048×8 和 8×2048），
+     训练时只调这两个小矩阵。
+     效果接近全参微调，但可训练参数少了几百倍。</p>
+<p>【q_proj / v_proj 是什么】
+     Transformer 里的"注意力"机制有两组投影矩阵（query、value）。
+     在这两处加补丁，是业界验证过效果最好、最省资源的选择。</p>
+<p>【训练后你会看到】
+     trainable params: 540,672 || all params: 494,573,440 || trainable%: 0.1093
+     ↑ 意思是：5.4 万个参数要训练，占全部的 0.1%</p>
+<p>args = TrainingArguments(
+       output_dir="...",          # 结果存哪
+       num_train_epochs=3,        # 数据过 3 遍
+       max_steps=20,              # 或者最多走 20 步（这里用步数控制，好观察）
+       per_device_train_batch_size=1,   # 一次喂几条
+       learning_rate=1e-4,        # 学习率：每次调多少，别贪心
+       logging_steps=5,           # 每 5 步打印一次进度
+       save_strategy="no",        # 不存中间检查点
+       use_cache=False,           # 训练时关闭缓存，省内存
+       remove_unused_columns=False,  # 重要！否则我们的数据列会被删掉
+   )</p>
+<p>【为什么学习率要小】
+     学习率 = 每次调整旋钮的步长。太大一步跨过最优点（loss 变 nan），
+     太小又学不到东西。微调常用 1e-4 ~ 2e-5。</p>
+<p>def collator(feats):
+       b = tok([f["text"] for f in feats], return_tensors="pt", padding=True,
+               truncation=True, max_length=256)
+       labels = b["input_ids"].clone()
+       labels[labels == tok.pad_token_id] = -100
+       b["labels"] = labels
+       return b</p>
+<p>【逐行解释】
+   tok(...)          —— 分词，并把这一批文本转成模型能吃的数字
+   padding=True      —— 每条长度不一样，短的要补齐（补的叫 pad）
+   truncation=True   —— 太长的砍掉，max_length=256 最多留 256 个 token
+   labels = ...      —— 告诉模型"哪些位置是真正要学的"
+   labels[...==pad] = -100  —— 补位的地方不算分（-100 是"这里不用管"的标记）
+   这就是"collator"：把一批原始样本整理成一批模型输入的函数。</p>
+<p>trainer = Trainer(model=model, args=args, train_dataset=ds, data_collator=collator)
+   out = trainer.train()</p>
+<p>Trainer 会自动完成这个循环（每一"步"）：
+     1. 从数据里取一批
+     2. 送进模型
+     3. 算 loss（模型答得有多差）
+     4. 反向传播，算出每个旋钮该往哪调
+     5. 更新旋钮
+     重复，直到步数用完</p>
+<p>loss 从 3.5 降到 2.0 左右，说明"学进去了"。</p>
+<p>👆 注意看 loss 的变化：它从 3.5 左右一路往下掉。
+  loss 下降 = 模型"学进去了"。</p>
+<p>【关于 loss 的解读】
+  · loss 高（约 3-4）：模型对答案很意外，还在瞎猜
+  · loss 低（约 0.5-1）：模型答得有把握了
+  · loss 变成 nan：学习率太大，调小重跑</p>
+<p>现在我们加载刚才训出来的补丁，看回答有什么变化。</p>
+<p>【怎么用微调后的模型】
+  1. 加载原始模型（还是那个 Qwen2.5-0.5B）
+  2. 再加载你训出来的补丁
+  3. 两个合在一起，就是你的专属模型</p>
+<p>注意：补丁本身只有几 MB，原始模型才是大头。
+  所以存补丁很轻，分发也方便。</p>
+<p>👆 你会看到回答的"口音"变了——它开始用训练数据里的那种说法。</p>
+<p>【必须诚实地说清楚三件事】</p>
+<p>1）10 组数据做不出"专业模型"。
+     你会看到它学会了你的格式和部分说法，
+     但对没教过的问题，它还是原来那个水平。</p>
+<p>2）回答开始有"重复"和"跑偏"（比如出现"### 译文:"这种没意义的片段）。
+     这不是 bug，是"学过头"的表现——这叫<strong>过拟合</strong>：
+     模型把训练数据背得太熟，以至于生成时开始机械地重复。
+     真实项目要靠：更多数据、更多验证集、早停（loss 不降了就停）来控制。</p>
+<p>3）这一步的意义不是"做出了一个多厉害的模型"，
+     而是让你<strong>亲手走完一遍"数据 → 训练 → 验证"的完整闭环</strong>。
+     流程你走通了，后面加数据、换模型、调参数，都是同一套流程。</p>
+<p>【微调 vs 提示工程，什么时候用哪个】
+  · 提示工程（第 2、3 课）：不改模型，每次提问多说几句。零成本，随时可改。
+  · 微调（本课）：改模型本身，一次训练长期生效。需要准备数据。
+  · 经验法则：先试提示工程，不够再微调。</p>
+<ol>
+<li>微调 = 用"问答对"继续训练已有模型，让它懂你的领域。</li>
+<li>LoRA 只训练 0.1% 的参数，16GB 电脑完全能跑。</li>
+<li>训练流程：准备数据 → 格式化 → 加载模型 → 装 LoRA → 配置 → 开跑 → 保存。</li>
+<li>loss 下降是训练有效的标志；变 nan 是学习率太大。</li>
+<li>10 条数据只能演示流程，真项目需要几百到几千条。</li>
+</ol>
+<p>【你现在拥有的能力】
+  · 知道微调在改什么、改哪部分
+  · 看懂完整训练代码的每一行
+  · 亲手训出过模型并验证了效果
+  · 知道数据的量级决定了效果的上限</p>
+<p>【下一课预告】
+  第 6 课：改掉模型记错的知识。
+  如果模型总把某件事记错（比如你的公司名、你的产品名），
+  有没有办法只改这一处，不重训整个模型？答案是：有。</p>
+<p>【怎么继续】
+  bash AI起步/上课.sh   然后输入 6</p>
+<h1 id="6_2">第 6 课 · 改掉模型记错的知识</h1>
+<blockquote>
+<p>脚本：<code>第6课_知识编辑.py</code></p>
+</blockquote>
+<h2 id="vs">先说清楚：知识编辑 vs 微调</h2>
+<p>【微调】像"回炉培训"——把整个模型重新教一遍。
+        适合：需要改变模型的整体风格/能力。
+        代价：要数据、要时间、要显卡。</p>
+<p>【知识编辑】像"打补丁"——只动一个地方，其它纹丝不动。
+        适合：模型把某一条具体的事记错了。
+        代价：几秒钟，只改一条。</p>
+<p>打个比方：
+  微调 = 重装修整套房
+  知识编辑 = 换掉那个坏掉的电灯开关</p>
+<p>【它是怎么做到的？】
+  模型把"梅西踢足球"这个知识，分布式地存在很多层权重里。
+  知识编辑的思路是：找到这些权重，算出"要让它改成踢篮球，
+  这几个数字该改成多少"，然后精确地改掉。</p>
+<p>难点在于：改的时候不能伤到别的知识。
+  所以要评估两件事：
+    · 可靠性（reliability）：目标知识改对了吗？
+    · 局部性（locality）：旁边的知识没被误伤吗？</p>
+<p>我们用 GPT-2 做实验（它很小，跑得快，够用了）。</p>
+<p>先问一个它记错的事实：</p>
+<p>我们用 EasyEdit 这个工具包来做知识编辑。
+（这个工具包是浙大 zjunlp 团队开源的，专门做模型编辑。）</p>
+<p>【操作分 4 步，每一步都有对应概念】</p>
+<p>第 1 步：准备"要改的知识"
+     prompts       —— 用什么方式问它
+     ground_truth  —— 它现在认为的答案（football）
+     target_new    —— 你要改成什么（basketball）
+     subject       —— 改的是关于谁（Lionel Messi）</p>
+<p>第 2 步：实例化 Editor（编辑器）
+     Editor = 编辑场景的容器，把模型 + 知识 + 超参装在一起</p>
+<p>第 3 步：执行编辑
+     editor.edit(...) —— 真正动权重</p>
+<p>第 4 步：验证
+     官方指标会告诉你：改对了吗？旁边的东西坏了吗？</p>
+<p>上面的指标有点抽象。我们直接看模型生成的内容。</p>
+<p>现在模型里已经装进了"梅西踢篮球"这条新知识。
+我们问它几个问题，看它怎么回答。</p>
+<p>👆 你会发现：GPT-2 这个小模型上，生成的文本变化不太明显。
+  这很正常，原因有二：
+    1. GPT-2 太小，1.5 亿参数，编辑一条知识对它来说"举足轻重"，
+       反而容易伤到别处（所以 locality 是 0）
+    2. 它编辑的是 MLP 层的权重，不是词表——
+       所以"梅西→篮球"这个映射改掉了，但自由生成的句子未必明显体现</p>
+<p>【正确的读指标方式】
+  不要看自由生成的文本好不好，要看官方指标：
+  rewrite_acc 0 → 1 说明目标知识确实改掉了。
+  评测用的是"教师强制"（把正确答案喂进去逐 token 对比），
+  比自由生成可靠得多。</p>
+<p>【模型答错了，怎么办？按这个顺序试】</p>
+<p>第 1 招：换更强的模型 / 加上下文（最便宜，先试这个）
+      · 模型太小记不住 → 换 8B
+      · 资料没给它 → 塞进提示词
+      · 问题没说清 → 改提示词（第 3 课）</p>
+<p>第 2 招：检索增强（RAG）
+      · 知识不常变、但要求准确 → 建知识库，检索后塞进提示词
+      · 好处：不用重训，改知识库就行
+      · 这是目前企业落地最主流的做法</p>
+<p>第 3 招：微调（第 5 课）
+      · 要改变模型的"风格/口径/能力" → 微调
+      · 要几十到几千条数据</p>
+<p>第 4 招：知识编辑（本课）
+      · 就是要改某一条具体事实 → 知识编辑
+      · 几秒钟搞定，不需要数据集</p>
+<p>第 5 招：重训
+      · 前面都不行，或者模型架构要换 → 才考虑</p>
+<p>【一张对比表】
+  ┌────────────┬──────────┬────────┬──────────┬──────────────┐
+  │ 方法       │ 改什么   │ 耗时   │ 需要数据 │ 适合场景     │
+  ├────────────┼──────────┼────────┼──────────┼──────────────┤
+  │ 提示工程   │ 什么都没改│ 0      │ 无       │ 绝大多数情况 │
+  │ RAG        │ 什么都没改│ 小时级 │ 文档     │ 知识要准确   │
+  │ 微调       │ 模型权重  │ 小时天 │ 几十+    │ 改风格能力   │
+  │ 知识编辑   │ 少量权重  │ 秒级   │ 1条      │ 改单条事实   │
+  │ 重训       │ 全部权重  │ 天周   │ 海量     │ 换架构       │
+  └────────────┴──────────┴────────┴──────────┴──────────────┘</p>
+<ol>
+<li>知识编辑是"打补丁"：几秒钟改掉一条具体知识，其它不动。</li>
+<li>两个核心指标：可靠性（改对了吗）、局部性（伤到别人了吗）。</li>
+<li>难点在局部性——改一处不伤别处，是这类方法的核心挑战。</li>
+<li>实战中优先用更简单的招：换模型 → RAG → 微调 → 知识编辑 → 重训。</li>
+</ol>
+<p>【你现在学过的四种"改变模型行为"的方式】
+  · 提示工程：不改模型，每次多说几句（第 2、3 课）
+  · 微调：改模型权重，整体重教（第 5 课）
+  · 知识编辑：改模型权重，只动一条（本课）
+  · 换模型：什么都不改，直接用更强的（第 1 课）</p>
+<p>【下一课预告】
+  第 7 课：给 AI 生成的内容盖个戳。
+  怎么证明一段文字是 AI 生成的、而不是人写的？
+  这是 AI 时代越来越重要的一个问题。</p>
+<p>【怎么继续】
+  bash AI起步/上课.sh   然后输入 7</p>
+<h1 id="7-ai">第 7 课 · 给 AI 生成的内容盖个戳（水印）</h1>
+<blockquote>
+<p>脚本：<code>第7课_水印.py</code></p>
+</blockquote>
+<h2 id="_26">为什么需要水印</h2>
+<p>想象这些场景：
+  · 老师要判断作业是不是 AI 写的
+  · 平台要标注"本文由 AI 生成"
+  · 有人拿 AI 洗稿冒充原创
+  · 你自己想让读者知道这段文字来自 AI</p>
+<p>水印（watermark）的思路：在生成内容时，
+悄悄按某种规则"标记"每一个词。肉眼看不出来，
+但用同一套规则就能检测出来。</p>
+<p>【和"隐形墨水"的区别】
+  传统隐形墨水是物理标记；AI 水印是"统计规律"——
+  文字的用词分布带上了模型的指纹。</p>
+<p>【思路：让模型"偏心"】</p>
+<p>模型生成下一个词时，会给词表里每个词打概率分，然后按概率抽一个。</p>
+<p>水印算法做的事：
+  1. 把词表分成两半：一半叫"绿名单"，一半叫"红名单"
+     （分法由当前上下文的哈希决定，所以外人猜不到）
+  2. 如果这一轮要写"1"，就给绿名单的词加分
+     如果要写"0"，就给红名单的词加分
+  3. 结果：带水印的文字里，"绿词"出现的比例会异常偏高</p>
+<p>【检测：看比例偏了多少】
+  如果水印强度是 50%（一半词在绿名单），
+  那么正常文本里绿词占比应该在 50% 附近随机波动。
+  统计足够多的词，就能看出它是否系统性偏高。</p>
+<p>这个偏差用 z-score（z 分数）表示：
+    z-score = 0  → 跟随机没区别（没水印）
+    z-score &gt; 4  → 高度确信有水印</p>
+<p>【为什么它能藏住】
+  因为偏移只是"稍微"提高了一点点概率，
+  文本读起来依然完全自然。</p>
+<p>👆 这就是水印的全部魔法。</p>
+<p>看第一列：无水印的 z-score 在 0 附近随机波动
+  看第二列：带水印的 z-score 明显更高（通常 &gt; 4）</p>
+<p>【关键点】
+  · 两段文字读起来一样自然，人眼看不出区别
+  · 但检测器用"绿名单"这个隐藏规则一扫，分数立刻分开</p>
+<p>【实战意义】
+  · 平台可以给 AI 生成的内容加戳，然后自动检测
+  · 前提是：检测方知道用的是哪种水印算法和参数
+    （所以工业界在推动"水印标准化"）</p>
+<p>【水印的弱点——也很重要】
+  1. 文本被改写（paraphrase）后，水印会减弱
+  2. 文本被翻译后，水印基本失效
+  3. 文本太短时，统计量不足，检测不准（所以要长文本）
+  4. 有人专门研究"洗掉水印"的方法</p>
+<p>所以水印是"提高造假成本"的手段，不是"绝对保证"。</p>
+<p>水印不是越强越好。强度（gamma）越大：
+  · 越容易检测出来
+  · 但文本质量下降（模型被强行推着说某些词）</p>
+<p>我们实测对比一下。</p>
+<p>👆 你会看到强水印的文本有点"生硬"——
+  模型被迫更频繁地使用绿名单里的词。</p>
+<p>【工程上的权衡】
+    强度 0.25~0.5：大多数论文和工业界的甜点区
+    平衡了"能检出"和"读起来自然"</p>
+<p>有意思的是：这个权衡和"温度"是一回事。
+  都是"随机性 vs 可控性"的调节旋钮。</p>
+<p>水印只是其中一种办法。整个领域有几种思路：</p>
+<p>【1. 隐形水印（本课学的）】
+  嵌入统计规律，检测需要知道算法。
+  优点：文本看起来完全自然。缺点：改写/翻译会破坏。</p>
+<p>【2. 元数据标记】
+  在文件里塞隐藏信息（比如 PNG 里有 C2PA 标记）。
+  优点：稳，不会被破坏。缺点：转格式就没了。</p>
+<p>【3. 官方标识 / 披露要求】
+  中国《生成式人工智能服务管理暂行办法》要求：
+  提供生成式 AI 服务时，要标识生成内容。
+  欧盟 AI 法案也有类似要求。
+  优点：法律层面强制。缺点：依赖自觉和平台执行。</p>
+<p>【4. 检测器（反向思路）】
+  不加戳，而是训练一个"AI 文本检测器"，
+  看文本像不像 AI 写的。
+  缺点：误判率高（人写的正式文件也可能被判成 AI），
+        而且现在已有方法专门绕过检测器。</p>
+<p>【现状】
+  目前没有"绝对可靠"的单一方案，行业共识是组合使用：
+  内容水印 + 元数据 + 平台披露 + 人工复核。</p>
+<p>【本课要点】
+  1. 水印 = 生成时按隐藏规则轻微偏置用词，检测时看统计偏差。
+  2. z-score 是关键指标，&gt; 4 基本可判定有水印。
+  3. 强度存在权衡：越强越易检出，文本质量越差。
+  4. 水印怕改写和翻译，且短文本检不准。</p>
+<p>【七课总回顾 —— 你已经学到的全部内容】</p>
+<p>第 1 课  大模型是什么
+         它只会"接话"，按概率一个词一个词往外写。</p>
+<p>第 2 课  第一次对话
+         把话说全、给它派岗、让它先想、给个例子。</p>
+<p>第 3 课  怎样把话说得更准
+         提示词的 6 个零件；格式要怎么钉死；AI 写错了怎么掰。</p>
+<p>第 4 课  读懂输出
+         token 与计费、上下文窗口、logits 与温度。</p>
+<p>第 5 课  微调
+         LoRA 只训 0.1% 参数，16GB 电脑 15 秒就能训完。
+         流程：数据 → 格式化 → 装 LoRA → 训练 → 验证。</p>
+<p>第 6 课  知识编辑
+         秒级改掉一条具体知识，难点是别伤到别的。</p>
+<p>第 7 课  水印
+         隐形水印的原理：绿名单 + z-score 统计检测。</p>
+<p>【接下来你可以做什么】
+  · 把第 5 课的流程用在自己的数据上（几十条问答就能看到效果）
+  · 用第 7 课的方法检查别人给你的 AI 文本
+  · 学会用 RAG（检索增强）—— 这是目前最实用的企业落地方式
+    （原理：把资料存进向量库，提问时先检索出相关的，再塞给模型）</p>
+<p>【如果想继续深入】
+  回到《动手学大模型》原书，那里有 11 章的完整实验，
+  包括多模态、强化学习（RLHF）、GUI 智能体等进阶内容。
+  原书的学习包在：
+  M4学习包/</p>
+<p>════════════════════════════════════════════════════════════
+  七课学完了。恭喜！
+  这套教程的目标不是让你变成算法工程师，
+  而是让你能看懂 AI 在做什么、知道它的能力边界、
+  并且能自己上手用它解决实际问题。
+════════════════════════════════════════════════════════════</p>
+</article></main></div>
+<button id="toTop" title="回到顶部">↑</button>
+<script>
+const links=[...document.querySelectorAll('.nav-sub li a')];
+const heads=links.map(a=>document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+const toTop=document.getElementById('toTop');
+const prog=document.getElementById('progress');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+
+function onScroll(){
+  const y=window.scrollY+120;
+  let cur=null;
+  for(const h of heads){ if(h.offsetTop<=y) cur=h; else break; }
+  links.forEach(a=>a.classList.toggle('active', cur && a.getAttribute('href')==='#'+cur.id));
+  if(cur){ const el=a2li(cur.id); if(el) el.scrollIntoView({block:'nearest'}); }
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  prog.style.width=(h>0?(window.scrollY/h*100):0)+'%';
+  toTop.classList.toggle('show', window.scrollY>500);
+}
+function a2li(id){return links.find(a=>a.getAttribute('href')==='#'+id);}
+window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('load',onScroll);
+toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+// 移动端
+window.__toggleNav=(open)=>{sidebar.classList.toggle('open',open);overlay.classList.toggle('show',open);};
+document.querySelector('.menu-btn').onclick=()=>window.__toggleNav(true);
+overlay.onclick=()=>window.__toggleNav(false);
+links.forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=900)window.__toggleNav(false);}));
+</script></body></html>
