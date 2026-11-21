@@ -10,11 +10,27 @@ AI 对话台 · 桌面版（图形界面，双击即用）
 """
 
 import json
+import os
+import sys
 import threading
 import queue
 import urllib.request
 import tkinter as tk
 from tkinter import scrolledtext, ttk, messagebox
+
+# ---- 图形引擎自举 ----
+# 系统自带的 Python 用 Tk 8.5，在 macOS 上会画出「窗口在、内容空」的毛病。
+# 如果发现图形引擎太老，自动换用新版本 Python 重新启动自己（只重启一次）。
+if tk.TkVersion < 8.6 and not os.environ.get("AI_DIRECTOR_REEXEC"):
+    _候选 = [
+        os.path.expanduser("~/.workbuddy/binaries/python/versions/3.13.12/bin/python3"),
+        os.path.expanduser("~/llm-lab/venv-m4/bin/python"),
+    ]
+    for _py in _候选:
+        if os.path.exists(_py) and _py != sys.executable:
+            _环境 = dict(os.environ)
+            _环境["AI_DIRECTOR_REEXEC"] = "1"
+            os.execve(_py, [_py, os.path.abspath(__file__)] + sys.argv[1:], _环境)
 
 OLLAMA = "http://127.0.0.1:11434"
 
@@ -103,13 +119,17 @@ class 对话台(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("AI 对话台")
-        self.geometry("960x700")
+        self.geometry("980x760")
+        self.minsize(760, 560)
         self.configure(bg=底色)
         self.resizable(True, True)
 
         self.历史 = []
         self.最近问题 = ""
         self.消息队列 = queue.Queue()
+        # 右键菜单弹出前，先把用户已经选中的文字记下来。
+        # 否则菜单弹出/焦点变化时选区可能被清掉，复制就只能拿到全文。
+        self._菜单选区 = {}
 
         self._建界面()
         self.after(100, self._处理队列)
@@ -188,9 +208,22 @@ class 对话台(tk.Tk):
         self.对话 = scrolledtext.ScrolledText(
             对话框, wrap="word", bg=纸白, fg=文字,
             font=("PingFang SC", 13), relief="flat", bd=0,
+            height=16,
             padx=16, pady=14, state="disabled", insertwidth=0)
         self.对话.pack(fill="both", expand=True)
         self._装右键菜单(self.对话, 可粘贴=False)   # 对话记录可以选中复制
+
+        # 对话区平时只读防止误改，但按住鼠标时临时放开，让用户能拖选文字；
+        # 选区由 _装右键菜单 里统一的松开记录逻辑保存，这里只管恢复只读。
+        def _临时可选(事件):
+            if str(self.对话.cget("state")) == "disabled":
+                self.对话.configure(state="normal")
+
+        def _恢复只读(事件):
+            self.对话.configure(state="disabled")
+
+        self.对话.bind("<ButtonPress-1>", _临时可选, add="+")
+        self.对话.bind("<ButtonRelease-1>", _恢复只读, add="+")
 
         # ---- 输入区 ----
         输入区 = tk.Frame(self, bg=底色)
@@ -289,12 +322,32 @@ class 对话台(tk.Tk):
             菜单.add_separator()
             菜单.add_command(label="清空输入", command=lambda: self._清空控件(控件))
 
+        def 记选区(事件):
+            # 每次左键松开都记下当前拖选的文字；没选中就清掉旧快照
+            try:
+                sel = 控件.get("sel.first", "sel.last")
+            except tk.TclError:
+                sel = ""
+            if sel.strip():
+                self._菜单选区[控件] = sel
+            else:
+                self._菜单选区.pop(控件, None)
+
         def 弹出(事件):
+            # 右键本身可能清掉选区；只有读到非空选区才更新快照，
+            # 否则保留左键松开时记下的那份，避免复制退回全文。
+            try:
+                sel = 控件.get("sel.first", "sel.last")
+                if sel.strip():
+                    self._菜单选区[控件] = sel
+            except tk.TclError:
+                pass
             try:
                 菜单.post(事件.x_root, 事件.y_root)
             except Exception:
                 pass
 
+        控件.bind("<ButtonRelease-1>", 记选区, add="+")
         控件.bind("<Button-2>", 弹出, add="+")   # macOS 右键
         控件.bind("<Button-3>", 弹出, add="+")   # 部分系统右键
 
@@ -331,7 +384,15 @@ class 对话台(tk.Tk):
         self._粘贴到(self.输入框)
 
     def _复制控件内容(self, 控件):
-        内容 = 控件.get("1.0", "end").strip()
+        # 用户拖选了哪段就复制哪段；只有没选中时才复制整个控件
+        选中 = self._菜单选区.get(控件)
+        if 选中 is None:
+            try:
+                选中 = 控件.get("sel.first", "sel.last")
+            except tk.TclError:
+                选中 = ""
+        选中 = (选中 or "").strip()
+        内容 = 选中 if 选中 else 控件.get("1.0", "end").strip()
         if 内容:
             self._写到剪贴板(内容)
 
