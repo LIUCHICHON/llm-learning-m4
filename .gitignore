@@ -3,6 +3,18 @@
 .AppleDouble
 .LSOverride
 ._*
+*.app
+
+# 密钥与环境
+.env
+*.env
+
+# 依赖与模型权重
+node_modules/
+*.bin
+*.pt
+*.pth
+*.onnx
 
 # Python
 __pycache__/
