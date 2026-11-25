@@ -43,11 +43,16 @@ from AI工具箱 import 标题, 小节, 说明, 问模型, 友好报错
   英文：1 个单词 ≈ 1.3 个 token
   数字和标点也会占 token
 
-我们用你的 Ollama 实际测一下。''')
+下面这张表，是用你本机的 Ollama 真实测出来的。
+测法说清楚，你才信得过这些数字：
+  · 测什么：5 段文字，各自有多少个字符、被切成多少个 token
+  · 用什么测：本机 Ollama 引擎 + qwen2.5:0.5b 模型的分词器
+  · 怎么测：把文字原样送给 Ollama 切分（raw 模式，不套聊天模板，
+    也只让它生成 1 个 token 就停），读它返回的 token 个数。
+    这就是模型真正"看到"的 token 数，不是估算。''')
 
 try:
-    from transformers import AutoTokenizer
-    tok = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct')
+    from AI工具箱 import 数token
 
     样例 = [
         ('短句子', '你好'),
@@ -60,7 +65,7 @@ try:
     说明(f'{"样例":<12}{"字符数":>8}{"token数":>9}   说明')
     说明('-' * 58)
     for 名称, 文本 in 样例:
-        n = len(tok(文本)['input_ids'])
+        n = 数token(文本)
         比 = f'{len(文本)/n:.2f} 字/token'
         说明(f'{名称:<12}{len(文本):>8}{n:>9}   {比}')
 except Exception as e:
@@ -149,7 +154,10 @@ except Exception as e:
   4. 按概率随机抽一个词（这就是 do_sample=True）
 
 【看一个真实例子】
-  我们让模型接着写"中国的首都是"，看看它给"北京"打了多少分。''')
+  我们让模型接着写"中国的首都是"，看看它给"北京"打了多少分。
+  说明一下：这里没有走 Ollama，而是直接把 0.5B 模型加载进 Python。
+  原因是 Ollama 的接口只给你最终回答，不给你"每个词的原始分数"；
+  要看 logits，就得直接跟模型对话。数据同样真实，只是换了个测法。''')
 
 try:
     import torch

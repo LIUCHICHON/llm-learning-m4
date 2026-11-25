@@ -122,6 +122,34 @@ def 逐字显示(问题, 模型=DEFAULT_MODEL, 温度=0.7):
 
 
 # ---------------------------------------------------------------------------
+# 函数 3.5：数一段文字有多少个 token（用本机 Ollama 真实分词）
+# ---------------------------------------------------------------------------
+def 数token(文本, 模型="qwen2.5:0.5b"):
+    """
+    让本机 Ollama 把这段文字切成 token，返回 token 个数。
+
+    原理：调用 /api/generate，raw=True 表示"原文直接分词，不套聊天模板"，
+    num_predict=1 表示"只生成 1 个 token 就停"（我们只要分词结果，不要它回答）。
+    返回的 prompt_eval_count 就是这段文本真实的 token 数。
+    """
+    payload = {
+        "model": 模型,
+        "prompt": 文本,
+        "stream": False,
+        "raw": True,
+        "options": {"num_predict": 1},
+    }
+    req = urllib.request.Request(
+        f"{OLLAMA_HOST}/api/generate",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        result = json.loads(resp.read())
+    return result["prompt_eval_count"]
+
+
+# ---------------------------------------------------------------------------
 # 函数 4：把常见报错翻译成人话
 # ---------------------------------------------------------------------------
 def 友好报错(错误信息):
