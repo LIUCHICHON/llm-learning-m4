@@ -91,17 +91,10 @@ from AI工具箱 import 标题, 小节, 说明, 问模型, 友好报错
 说明('''我们先问模型一个训练集里的问题，看看它现在的水平。
 这样训练完才有对比。''')
 
-测试问题 = '潮汕牛肉丸是什么？'
-
-try:
-    微调前 = 问模型(测试问题, 温度=0.3, 最长回答=200)
-    说明(f'【问题】{测试问题}')
-    说明('【微调前的回答】')
-    for 行 in 微调前.strip().split('\n')[:6]:
-        说明('   ' + 行)
-except Exception as e:
-    微调前 = None
-    说明('❌ ' + 友好报错(e))
+说明('''【训练前的对照——这一步请自己在另一个窗口跑】
+  要问的问题：潮汕牛肉丸是什么？
+  预期看到：模型给出"网上常见说法"，可能顺带提到福建也有类似做法。
+  本课脚本只给步骤和结果，不会替你执行；请照着做，亲眼看它的回答。''')
 
 说明('')
 说明('''👆 通用大模型可能答得不错，但答的是"网上常见说法"，
@@ -267,66 +260,57 @@ except Exception as e:
 # ===========================================================================
 # 第 4 部分：真的开始训练
 # ===========================================================================
-小节('第 4 部分：开始训练')
+小节('第 4 部分：开跑（步骤和结果，自己动手）')
 
-try:
+说明('''【重要】这一段不再自动执行。脚本只把步骤和预期结果列给你，
+你在另一个终端窗口里逐行敲、逐行看。
+
+【准备】先在另一个窗口进入 Python：
+    ~/llm-lab/venv-m4/bin/python
+看到 >>> 提示符再往下贴。
+
+【第 1 步：导入工具】在 >>> 后面逐行贴：
     import torch
     from datasets import Dataset
-    from transformers import (AutoTokenizer, AutoModelForCausalLM,
-                              TrainingArguments, Trainer)
+    from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
     from peft import LoraConfig, get_peft_model
+  预期结果：没有红字即成功。可敲 print(torch.__version__) 确认，显示 2.15.0。
 
-    模型名 = 'Qwen/Qwen2.5-0.5B-Instruct'
-    输出目录 = '/tmp/ai起步_微调'
-
-    # ---- 第 1 步：导入工具（上面已逐行讲过）----
-    print('   [1/6] 导入工具完成', flush=True)
-
-    # ---- 第 2 步：准备数据 ----
-    tok = AutoTokenizer.from_pretrained(模型名)
+【第 2 步：准备数据】接上一步，整段贴：
+    MODEL = 'Qwen/Qwen2.5-0.5B-Instruct'
+    训练数据 = [ ... ]    ← 把本脚本第 66~77 行的 10 组问答原样贴进去
+    tok = AutoTokenizer.from_pretrained(MODEL)
     tok.pad_token = tok.eos_token
-
     def 格式化(样本):
-        return {'text': f"### 指令:\n{样本['问']}\n### 回答:\n{样本['答']}"}
-
+        return {'text': f"### 指令:\\n{样本['问']}\\n### 回答:\\n{样本['答']}"}
     原始集 = Dataset.from_list([{'问': q, '答': a} for q, a in 训练数据])
     数据集 = 原始集.map(格式化)
-    print(f'   [2/6] 数据准备完成，共 {len(数据集)} 条', flush=True)
+    print('数据准备好，共', len(数据集), '条')
+  预期结果：数据准备好，共 10 条。中间会刷一行进度条，正常。
 
-    # ---- 第 3 步：加载模型 ----
-    print('   [3/6] 加载模型到 Apple 显卡...', flush=True)
-    t0 = time.time()
-    model = AutoModelForCausalLM.from_pretrained(模型名, dtype=torch.float32).to('mps')
-    print(f'         完成（{time.time()-t0:.1f} 秒），'
-          f'显存占用 {torch.mps.current_allocated_memory()/1024**3:.2f} GB', flush=True)
+【第 3 步：加载模型到显卡】
+    model = AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float32).to('mps')
+    print('模型已加载，显存占用', round(torch.mps.current_allocated_memory()/1024**3, 2), 'GB')
+  预期结果：安静几秒后显示 模型已加载，显存占用 1.xx GB。
 
-    # ---- 第 4 步：装 LoRA 补丁 ----
-    print('   [4/6] 装载 LoRA 适配器...', flush=True)
+【第 4 步：装 LoRA 补丁（核心）】
     lora_config = LoraConfig(
         r=8, lora_alpha=16, lora_dropout=0.05,
         target_modules=['q_proj', 'v_proj'], task_type='CAUSAL_LM')
     model = get_peft_model(model, lora_config)
     可训练 = sum(p.numel() for p in model.parameters() if p.requires_grad)
     全部 = sum(p.numel() for p in model.parameters())
-    print(f'         可训练参数 {可训练:,} / 全部 {全部:,} '
-          f'({可训练/全部*100:.4f}%)', flush=True)
+    print('可训练参数', f'{可训练:,}', '/', f'{全部:,}', f'({可训练/全部*100:.4f}%)')
+  预期结果：可训练参数 540,672 / 全部 494,573,440 (0.1093%) 附近。
+  意思是只训练全部参数的约千分之一，这就是 LoRA 省资源的地方。
 
-    # ---- 第 5 步：设置训练参数 ----
-    print('   [5/6] 配置训练参数...', flush=True)
+【第 5 步：配置训练参数和数据整理器】
     args = TrainingArguments(
-        output_dir=输出目录,
-        num_train_epochs=30,
-        max_steps=120,
-        per_device_train_batch_size=1,
-        learning_rate=3e-4,
-        logging_steps=10,
-        save_strategy='no',
-        use_cache=False,
-        report_to=[],
-        seed=42,
-        remove_unused_columns=False,
-    )
-
+        output_dir='/tmp/ai起步_微调',
+        num_train_epochs=30, max_steps=120,
+        per_device_train_batch_size=1, learning_rate=3e-4,
+        logging_steps=10, save_strategy='no', use_cache=False,
+        report_to=[], seed=42, remove_unused_columns=False)
     def collator(feats):
         b = tok([f['text'] for f in feats], return_tensors='pt',
                 padding=True, truncation=True, max_length=256)
@@ -334,28 +318,20 @@ try:
         labels[labels == tok.pad_token_id] = -100
         b['labels'] = labels
         return b
+    trainer = Trainer(model=model, args=args, train_dataset=数据集, data_collator=collator)
+    print('参数配置完成')
+  预期结果：参数配置完成。这一步只设置，不训练。
 
-    trainer = Trainer(model=model, args=args, train_dataset=数据集,
-                      data_collator=collator)
-
-    # ---- 第 6 步：开跑 ----
-    print('   [6/6] 开始训练（120 步，约 1-2 分钟）...', flush=True)
-    print('', flush=True)
+【第 6 步：开跑训练】
+    import time
     t0 = time.time()
     结果 = trainer.train()
-    耗时 = time.time() - t0
-    print('', flush=True)
-    print(f'   ✅ 训练完成！耗时 {耗时:.1f} 秒，最终 loss {结果.training_loss:.4f}')
-    print(f'   显存峰值 {torch.mps.current_allocated_memory()/1024**3:.2f} GB')
-
-    # ---- 保存 ----
-    model.save_pretrained(f'{输出目录}/适配器')
-    print(f'   ✅ 适配器已保存到 {输出目录}/适配器')
-
-except Exception as e:
-    print('')
-    print(f'   ❌ 训练失败：{友好报错(e)}')
-    raise
+    print('训练耗时', round(time.time()-t0, 1), '秒，最终 loss', round(结果.training_loss, 4))
+    model.save_pretrained('/tmp/ai起步_微调/适配器')
+    print('适配器已保存')
+  预期结果：每 10 步刷一行 {'loss': ...}。重点盯 loss 那一列：
+  它从 3 点多一路往下掉，掉到 1 左右算学会。跑完打印耗时、最终 loss
+  和"适配器已保存"，约 1~2 分钟。这是全程唯一真正花时间的一步。''')
 
 说明('')
 说明('''👆 注意看 loss 的变化：它从 3.5 左右一路往下掉。
@@ -382,40 +358,22 @@ except Exception as e:
   注意：补丁本身只有几 MB，原始模型才是大头。
   所以存补丁很轻，分发也方便。''')
 
-try:
-    from AI工具箱 import 问模型 as 原始问法
-
-    # 用 transformers 直接调用带 LoRA 的模型
-    from transformers import AutoTokenizer as AT, AutoModelForCausalLM as AM
-    微调模型 = AM.from_pretrained(模型名, dtype=torch.float32)
+说明('''【第 7 步：验证效果】同样在另一个窗口自己敲，接在训练之后：
+    from transformers import AutoModelForCausalLM as AM
     from peft import PeftModel
-    微调模型 = PeftModel.from_pretrained(微调模型, f'{输出目录}/适配器')
+    微调模型 = AM.from_pretrained(MODEL, dtype=torch.float32)
+    微调模型 = PeftModel.from_pretrained(微调模型, '/tmp/ai起步_微调/适配器')
     微调模型.to('mps')
     微调模型.eval()
+    ids = tok(f"### 指令:\\n潮汕牛肉丸是什么？\\n### 回答:\\n", return_tensors='pt').to('mps')
+    with torch.no_grad():
+        out = 微调模型.generate(**ids, max_new_tokens=70, do_sample=False,
+                               repetition_penalty=1.15, eos_token_id=tok.eos_token_id)
+    print(tok.decode(out[0][ids['input_ids'].shape[1]:], skip_special_tokens=True).strip())
+  预期结果：模型用潮汕美食的口径回答牛肉丸问题，措辞贴近你喂进去的那 10 条，
+  不再是泛泛的网上说法。这就证明训练生效了。
 
-    微调后回答 = []
-    for 测试题 in ['潮汕牛肉丸是什么？', '什么是反沙芋头？', '潮汕工夫茶怎么喝？']:
-        ids = tok(f"### 指令:\n{测试题}\n### 回答:\n", return_tensors='pt').to('mps')
-        with torch.no_grad():
-            out = 微调模型.generate(**ids, max_new_tokens=70, do_sample=False,
-                                   repetition_penalty=1.15,   # 抑制重复
-                                   eos_token_id=tok.eos_token_id)
-        文本 = tok.decode(out[0][ids['input_ids'].shape[1]:], skip_special_tokens=True).strip()
-        # 截掉可能的模板残留
-        for 标记 in ['###', '\n\n']:
-            if 标记 in 文本:
-                文本 = 文本.split(标记)[0].strip()
-        微调后回答.append(文本)
-
-    for i, 测试题 in enumerate(['潮汕牛肉丸是什么？', '什么是反沙芋头？', '潮汕工夫茶怎么喝？']):
-        说明(f'【问题】{测试题}')
-        说明('【微调后】')
-        for 行 in 微调后回答[i].split('\n')[:4]:
-            说明('   ' + 行)
-        说明('')
-
-except Exception as e:
-    说明('❌ 验证失败：' + 友好报错(e))
+  本课脚本到此为止只给步骤和结果，不会替你执行任何训练或模型调用。''')
 
 说明('''👆 你会看到回答的"口音"变了——它开始用训练数据里的那种说法。
 
