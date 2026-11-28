@@ -158,7 +158,7 @@ img{max-width:100%;height:auto;display:block;margin:22px auto;border-radius:8px;
 </div>
 <div class="nav-group"><a class="nav-group-title" href="#7-ai">第 7 课 · 给 AI 生成的内容盖个戳（水印）</a>
 <ul class="nav-sub">
-<li><a href="#_26">为什么需要水印</a></li>
+<li><a href="#_27">为什么需要水印</a></li>
 </ul>
 </div></nav></aside>
 <main class="main">
@@ -1420,9 +1420,12 @@ print(问(&quot;你好&quot;))
 <p>### 指令:
    潮汕牛肉丸是什么？
    ### 回答:
-   潮汕牛肉丸是汕头特产……</p>
+   潮汕牛肉丸是汕头特产……&lt;|endoftext|&gt;</p>
 <p>这个 ### 标记叫"聊天模板"（chat template），
    是模型训练时约定的格式。必须和模型原本的格式一致，否则效果打折。</p>
+<p>【关键】答案末尾那个 &lt;|endoftext|&gt; 是"结束标记"（tok.eos_token），
+   教模型"说到这里就停"。代码里写成 {样本['答']}{tok.eos_token}。
+   少了它，模型学不会停，答完就继续往下编——这是上次串味的根因之一。</p>
 <p>model = AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float32).to("mps")</p>
 <p>from_pretrained  —— 从硬盘把模型读进内存
    dtype=torch.float32 —— 用 32 位精度存（精度最高但最占内存；本课用小模型没关系）
@@ -1448,16 +1451,19 @@ print(问(&quot;你好&quot;))
      trainable params: 540,672 || all params: 494,573,440 || trainable%: 0.1093
      ↑ 意思是：5.4 万个参数要训练，占全部的 0.1%</p>
 <p>args = TrainingArguments(
-       output_dir="...",          # 结果存哪
-       num_train_epochs=3,        # 数据过 3 遍
-       max_steps=20,              # 或者最多走 20 步（这里用步数控制，好观察）
+       output_dir='/tmp/ai起步_微调',  # 结果存哪
+       num_train_epochs=30,       # 数据最多过 30 遍
+       max_steps=120,             # 但最多走 120 步就停（用这个控制训练量）
        per_device_train_batch_size=1,   # 一次喂几条
-       learning_rate=1e-4,        # 学习率：每次调多少，别贪心
-       logging_steps=5,           # 每 5 步打印一次进度
+       learning_rate=3e-4,        # 学习率：每次调多少，别贪心
+       logging_steps=10,          # 每 10 步打印一次进度
        save_strategy="no",        # 不存中间检查点
        use_cache=False,           # 训练时关闭缓存，省内存
+       report_to=[],              # 不上报外部平台（省得联网）
+       seed=42,                   # 固定随机种子，结果可复现
        remove_unused_columns=False,  # 重要！否则我们的数据列会被删掉
-   )</p>
+   )
+   注：这里的值与第 4 部分动手步骤完全一致，照第 4 部分贴即可。</p>
 <p>【为什么学习率要小】
      学习率 = 每次调整旋钮的步长。太大一步跨过最优点（loss 变 nan），
      太小又学不到东西。微调常用 1e-4 ~ 2e-5。</p>
@@ -1465,7 +1471,15 @@ print(问(&quot;你好&quot;))
        b = tok([f["text"] for f in feats], return_tensors="pt", padding=True,
                truncation=True, max_length=256)
        labels = b["input_ids"].clone()
-       labels[labels == tok.pad_token_id] = -100
+       for i, f in enumerate(feats):
+           提示 = f"### 指令:
+{f['问']}</p>
+<h3 id="_26">回答:</h3>
+<p>"
+           提示长度 = len(tok(提示, add_special_tokens=False)['input_ids'])
+           真实长度 = len(tok(f['text'], add_special_tokens=False)['input_ids'])
+           labels[i, :提示长度] = -100
+           labels[i, 真实长度:] = -100
        b["labels"] = labels
        return b</p>
 <p>【逐行解释】
@@ -1473,8 +1487,13 @@ print(问(&quot;你好&quot;))
    padding=True      —— 每条长度不一样，短的要补齐（补的叫 pad）
    truncation=True   —— 太长的砍掉，max_length=256 最多留 256 个 token
    labels = ...      —— 告诉模型"哪些位置是真正要学的"
-   labels[...==pad] = -100  —— 补位的地方不算分（-100 是"这里不用管"的标记）
+   【关键改进】旧版只写一行 labels[labels==pad]==-100，有两个坑：
+     ① pad_token 和 eos_token 是同一个，会把答案末尾的结束标记一并抹掉；
+     ② "### 指令+问题"也参与了学习，模型分心去背问题。
+     新版：问题部分设 -100（不用学），结束标记保留（学会停），只学答案。
    这就是"collator"：把一批原始样本整理成一批模型输入的函数。</p>
+<p>【以哪一段为准】本部分只是逐行讲解原理。真正要敲的代码在第 4 部分
+   "开跑（步骤和结果，自己动手）"，两处已经同步为新版，照第 4 部分贴即可。</p>
 <p>trainer = Trainer(model=model, args=args, train_dataset=ds, data_collator=collator)
    out = trainer.train()</p>
 <p>Trainer 会自动完成这个循环（每一"步"）：
@@ -1742,7 +1761,7 @@ print(问(&quot;你好&quot;))
 <blockquote>
 <p>脚本：<code>第7课_水印.py</code></p>
 </blockquote>
-<h2 id="_26">为什么需要水印</h2>
+<h2 id="_27">为什么需要水印</h2>
 <p>想象这些场景：
   · 老师要判断作业是不是 AI 写的
   · 平台要标注"本文由 AI 生成"
