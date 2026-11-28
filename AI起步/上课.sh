@@ -52,8 +52,9 @@ echo "  第 4 课  读懂模型输出的东西（token、温度、上下文）"
 echo "  第 5 课  教模型你自己的知识（微调入门）"
 echo "  第 6 课  改掉模型记错的知识（知识编辑）"
 echo "  第 7 课  给 AI 生成的内容盖个戳（水印）"
+echo "  第 8 课  把你训练的模型放进 Ollama"
 echo ""
-echo "  输入 0-7 选择课程，输入 对话台 / 上手 输入 q 退出"
+echo "  输入 0-8 选择课程，输入 对话台 / 上手 输入 q 退出"
 echo ""
 
 read -p "  请输入课号：" CHOICE
@@ -69,8 +70,9 @@ case "$CHOICE" in
   5) SCRIPT="第5课_微调.py" ;;
   6) SCRIPT="第6课_知识编辑.py" ;;
   7) SCRIPT="第7课_水印.py" ;;
+  8) SCRIPT="第8课_放进Ollama.py" ;;
   q|Q) echo ""; echo "再见，明天见 👋"; echo ""; exit 0 ;;
-  *) echo ""; echo "❌ 只能输入 0-7 / 对话台 / 上手 / q"; echo ""; exit 1 ;;
+  *) echo ""; echo "❌ 只能输入 0-8 / 对话台 / 上手 / q"; echo ""; exit 1 ;;
 esac
 
 if [ ! -f "$COURSE_DIR/$SCRIPT" ]; then

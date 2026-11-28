@@ -34,7 +34,7 @@ def 提取课名(源码):
 
 
 md = []
-for i in [0] + list(range(1, 8)):
+for i in [0] + list(range(1, 9)):
     匹配 = glob.glob(f"{BASE}/AI起步/第{i}课_*.py")
     if not 匹配:
         continue
@@ -121,10 +121,10 @@ doc = f"""<!DOCTYPE html>
 <main class="main">
 <header class="hero">
 <h1>AI 起步</h1>
-<p class="sub">零基础大模型教程 · 七课学会</p>
+<p class="sub">零基础大模型教程 · 八课学会</p>
 <p class="meta">面向完全没接触过 AI 的成年人 · 不需要会编程<br>
 所有实验在 Apple M4 Mac mini 16GB 上实测跑通</p>
-<span class="badge">第1课 大模型是什么 → 第7课 水印</span>
+<span class="badge">第1课 大模型是什么 → 第8课 放进 Ollama</span>
 </header>
 <article class="content">
 {body}
