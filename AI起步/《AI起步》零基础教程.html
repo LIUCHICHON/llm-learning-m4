@@ -1505,11 +1505,14 @@ print(问(&quot;你好&quot;))
         return {'text': f"### 指令:\
 {样本['问']}\
 ### 回答:\
-{样本['答']}"}
+{样本['答']}{tok.eos_token}"}
     原始集 = Dataset.from_list([{'问': q, '答': a} for q, a in 训练数据])
     数据集 = 原始集.map(格式化)
     print('数据准备好，共', len(数据集), '条')
-  预期结果：数据准备好，共 10 条。中间会刷一行进度条，正常。</p>
+  预期结果：数据准备好，共 10 条。中间会刷一行进度条，正常。
+  【关键改进 1】答案末尾拼上 tok.eos_token（结束标记），
+  这是教模型"说完这句就停"。少了它，模型学不会停，就会不停往下编——
+  这正是上次把"糖桂花""signature food"串进来的根因之一。</p>
 <p>【第 3 步：加载模型到显卡】
     model = AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float32).to('mps')
     print('模型已加载，显存占用', round(torch.mps.current_allocated_memory()/1024**3, 2), 'GB')
@@ -1535,12 +1538,23 @@ print(问(&quot;你好&quot;))
         b = tok([f['text'] for f in feats], return_tensors='pt',
                 padding=True, truncation=True, max_length=256)
         labels = b['input_ids'].clone()
-        labels[labels == tok.pad_token_id] = -100
+        for i, f in enumerate(feats):
+            提示 = f"### 指令:\
+{f['问']}\
+### 回答:\
+"
+            提示长度 = len(tok(提示, add_special_tokens=False)['input_ids'])
+            真实长度 = len(tok(f['text'], add_special_tokens=False)['input_ids'])
+            labels[i, :提示长度] = -100
+            labels[i, 真实长度:] = -100
         b['labels'] = labels
         return b
     trainer = Trainer(model=model, args=args, train_dataset=数据集, data_collator=collator)
     print('参数配置完成')
-  预期结果：参数配置完成。这一步只设置，不训练。</p>
+  预期结果：参数配置完成。这一步只设置，不训练。
+  【关键改进 2】旧版只把 pad 设成 -100，会把答案末尾的结束标记也抹掉，
+  而且连"### 指令+问题"也算进 loss，模型一半精力在学复述问题。
+  新版：问题部分设 -100（不用学），只学答案；结束标记保留（学会停）。</p>
 <p>【第 6 步：开跑训练】
     import time
     t0 = time.time()
@@ -1557,6 +1571,17 @@ print(问(&quot;你好&quot;))
   · loss 高（约 3-4）：模型对答案很意外，还在瞎猜
   · loss 低（约 0.5-1）：模型答得有把握了
   · loss 变成 nan：学习率太大，调小重跑</p>
+<p>【训练完效果不理想？先看是哪种"不理想"】
+  情况 A：回答根本没变，还是网上那套说法
+    → 补丁没生效，或 loss 没降下来。检查 loss 是否降了、验证时是否加载了适配器。
+  情况 B：开头背对了，后面开始胡编、串味、冒出英文
+    → 典型是"没学会停 + 把问题也算进学习"。
+      本脚本上面【关键改进 1】【关键改进 2】已经修好这两处，
+      如果你是用旧版训的，请按新版代码重新训练一次。
+  情况 C：答案机械重复、车轱辘话
+    → 学过头（过拟合）。减少 max_steps，或增加数据。</p>
+<p>重要：微调不是"训一次就一定成"。10 条数据只能演示流程，
+  效果不理想是常态，靠"看回答 → 判断属于哪种 → 调对应旋钮"逐步改。</p>
 <p>现在我们加载刚才训出来的补丁，看回答有什么变化。</p>
 <p>【怎么用微调后的模型】
   1. 加载原始模型（还是那个 Qwen2.5-0.5B）
@@ -1577,10 +1602,11 @@ print(问(&quot;你好&quot;))
 ", return_tensors='pt').to('mps')
     with torch.no_grad():
         out = 微调模型.generate(**ids, max_new_tokens=70, do_sample=False,
-                               repetition_penalty=1.15, eos_token_id=tok.eos_token_id)
+                               eos_token_id=tok.eos_token_id, pad_token_id=tok.eos_token_id)
     print(tok.decode(out[0][ids['input_ids'].shape[1]:], skip_special_tokens=True).strip())
   预期结果：模型用潮汕美食的口径回答牛肉丸问题，措辞贴近你喂进去的那 10 条，
-  不再是泛泛的网上说法。这就证明训练生效了。</p>
+  并且说完就停，不再往下堆砌编造的内容。这就证明训练生效了。
+  注：旧版的 repetition_penalty=1.15 会逼着模型换词，反而诱发胡编，已去掉。</p>
 <p>本课脚本到此为止只给步骤和结果，不会替你执行任何训练或模型调用。</p>
 <p>👆 你会看到回答的"口音"变了——它开始用训练数据里的那种说法。</p>
 <p>【必须诚实地说清楚三件事】</p>
