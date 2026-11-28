@@ -13,7 +13,14 @@
 好消息：这些坑我都替你踩过了，命令全部实测跑通。
 你照着敲，10 分钟就能在 Ollama 里跟自己训的模型对话。
 
-预计用时：15 分钟
+更重要的是：这一课给你 **三条路**，而且 **原来的模型库一个都不动**：
+  · Python 路 —— 在 Python 里直接加载补丁，学习调试最方便
+  · Ollama 路 —— 图形界面、手机访问、分享给别人
+  · llama.cpp 路 —— 命令行跑 GGUF，还能修改（换补丁、改精度）
+
+三条路都用同一个补丁，互不干扰；原有的 qwen2.5 等模型全程保留。
+
+预计用时：25 分钟
 '''
 
 from AI工具箱 import 标题, 小节, 说明
@@ -29,7 +36,16 @@ from AI工具箱 import 标题, 小节, 说明
   · 你的补丁（4 MB）：学到的潮汕美食知识
   · 两个合起来：才是你专属的完整模型
 
-Ollama 只认完整模型，不认补丁。所以要先把补丁"焊"回原模型。''')
+Ollama 只认完整模型，不认补丁。所以要先把补丁"焊"回原模型。
+
+【最重要的保证：原来的库一个都不动】
+  这一课所有操作都是"新增"，不是"替换"：
+    · Ollama 里原有的 qwen2.5:0.5b、qwen2.5:3b-instruct、qwen3-8b 等模型 —— 全部保留
+    · HuggingFace 缓存里的原始模型 Qwen2.5-0.5B-Instruct —— 保留
+    · 第 5 课训出的补丁 ~/llm-lab/我的模型/牛肉丸_精确版 —— 保留
+  我们只是另外造了一个新模型 chaoshan-beef，和你原来的库并存。
+  想验证，随时敲 `ollama list`，原来的模型都还在。
+  想回到原来的状态，敲 `ollama run qwen2.5:0.5b`，它还是老样子。''')
 
 
 # ===========================================================================
@@ -224,21 +240,180 @@ Ollama 只认完整模型，不认补丁。所以要先把补丁"焊"回原模�
 
 
 # ===========================================================================
+# 第 6 部分：Python 路
+# ===========================================================================
+小节('第 6 部分：另一条路 —— Python 直接加载补丁')
+
+说明('''【这条路适合谁】
+  自己学习、反复调试、想看清每一步在做什么 —— 用 Python 最直接。
+  不用合并、不用转格式、不用导入 Ollama，补丁拿来就挂。
+  原来的模型库同样不动。
+
+【准备】在终端敲，进 Python（用的是第 5 课那个专用环境）：
+
+    ~/llm-lab/venv-m4/bin/python
+
+看到 `>>>` 后，整段贴进去（一次贴一块，看到 `>>>` 再贴下一块）：
+
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from peft import PeftModel
+    import torch
+
+    MODEL = 'Qwen/Qwen2.5-0.5B-Instruct'
+    补丁 = '/Users/yonghua/llm-lab/我的模型/牛肉丸_精确版'
+
+    tok = AutoTokenizer.from_pretrained(MODEL)
+    tok.pad_token = tok.eos_token
+
+    # 先加载原模型（HuggingFace 缓存里的那份，没被改动）
+    model = AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float32)
+    # 再把补丁挂上去 —— 就像给原模型戴了顶帽子
+    model = PeftModel.from_pretrained(model, 补丁).to('mps')
+    model.eval()
+
+【提问验证】
+
+    ids = tok(f"### 指令:\\n潮汕牛肉丸是什么？\\n### 回答:\\n",
+              return_tensors='pt').to('mps')
+    with torch.no_grad():
+        out = model.generate(**ids, max_new_tokens=70, do_sample=False,
+                             eos_token_id=tok.eos_token_id,
+                             pad_token_id=tok.eos_token_id)
+    print(tok.decode(out[0][ids['input_ids'].shape[1]:],
+                     skip_special_tokens=True).strip())
+
+【预期看到】
+
+    潮汕牛肉丸是汕头特产，以新鲜牛肉手工捶打起浆后制成，口感弹牙、汤头清鲜，是潮汕饮食的代表。
+
+【这条路的好处】
+  · 补丁只有 4 MB，原模型是共享的，换个补丁只要改上面 `补丁` 那一行
+  · 回答最干净 —— 没有 GGUF 转换后多续一句的小毛病
+  · 想重新训练、换数据，接着第 5 课的流程走即可
+
+【和 Ollama 路怎么选】
+  Python 路：学习、调试、改来改去 → 最快
+  Ollama 路：做好之后给人用、图形界面聊 → 最方便
+  两条路用的是同一个补丁，结果一致，不存在"选了就回不去"。''')
+
+
+# ===========================================================================
+# 第 7 部分：llama.cpp 路
+# ===========================================================================
+小节('第 7 部分：第三条路 —— llama.cpp 加载与修改')
+
+说明('''【llama.cpp 是什么】
+  Ollama 底层其实就是 llama.cpp。它有两个命令行工具，本机已自带：
+    · `llama-server` —— 把模型跑成一个本地服务，用网页或接口提问
+    · `llama-quantize` —— 改模型的"精度"，把文件变小
+
+  走这条路的好处：能直接挂载 LoRA 补丁（不像 Ollama 那样必须合并），
+  还能把模型压缩到原来的一半大小。原库同样一个都不动。
+
+【工具在哪】
+    ~/.local/lib/ollama/llama-server
+    ~/.local/lib/ollama/llama-quantize
+
+【加载方式 A：原库 + 补丁直接挂（推荐，最省事）】
+
+  第 1 步：把第 5 课的补丁转成 llama.cpp 认的 GGUF（只需一次）：
+
+    cd ~/AI起步
+    ~/llm-lab/venv-m4/bin/python 工具/convert_lora_to_gguf.py \\
+      /Users/yonghua/llm-lab/我的模型/牛肉丸_精确版 \\
+      --outfile /Users/yonghua/llm-lab/我的模型/牛肉丸_精确版/lora.gguf --outtype f16
+
+  预期：打印 `Model successfully exported to .../lora.gguf`，
+  生成约 4.1 MB 的小文件。原补丁没被改动。
+
+  第 2 步：找到原库模型的真实路径（Ollama 存的 GGUF）：
+
+    ollama show qwen2.5:0.5b --modelfile | head -5
+
+  会看到一行 `FROM /Users/yonghua/.ollama/models/blobs/sha256-...`，
+  把这段路径记下来（下面叫它 `原库路径`）。
+
+  第 3 步：启动服务，把补丁挂上去：
+
+    ~/.local/lib/ollama/llama-server \\
+      -m "原库路径" \\
+      --lora /Users/yonghua/llm-lab/我的模型/牛肉丸_精确版/lora.gguf \\
+      --port 18321 --host 127.0.0.1 -c 512 --no-webui
+
+  看到 `listening on http://127.0.0.1:18321` 就成了。这个窗口别关。
+
+  第 4 步：另开一个终端窗口提问：
+
+    curl -s http://127.0.0.1:18321/completion -H 'Content-Type: application/json' \\
+      -d '{"prompt":"### 指令:\\n潮汕牛肉丸是什么？\\n### 回答:\\n","n_predict":80,"temperature":0,"stop":["<|im_end|>"]}'
+
+  预期：`content` 里是那句一字不差的潮汕美食回答。
+  这证明：原库没动、补丁单独挂着，效果照样出来。
+
+  用完回到服务窗口按 Ctrl+C 停掉。
+
+【加载方式 B：加载合并后的完整 GGUF】
+
+  如果不想挂补丁，直接跑第 3 部分生成的完整模型：
+
+    ~/.local/lib/ollama/llama-server \\
+      -m /Users/yonghua/llm-lab/我的模型/牛肉丸_Ollama版/niuwanwan.f16.gguf \\
+      --port 18321 --host 127.0.0.1 -c 512 --no-webui
+
+  提问方式同上。这条路不依赖补丁，一个 GGUF 文件就是完整模型。
+
+【修改方式：改精度，把模型变小】
+
+  完整 GGUF 是 f16 精度、948 MB。可以压成 q8_0，约 506 MB，回答基本不变：
+
+    ~/.local/lib/ollama/llama-quantize \\
+      /Users/yonghua/llm-lab/我的模型/牛肉丸_Ollama版/niuwanwan.f16.gguf \\
+      /Users/yonghua/llm-lab/我的模型/牛肉丸_Ollama版/niuwanwan.q8_0.gguf \\
+      q8_0 4
+
+  预期看到 `model size = 942 MiB` → `quant size = 500 MiB`，
+  约 2 秒完成。然后按"加载方式 B"把路径换成 q8_0 文件即可。
+
+  【常见精度怎么选】
+    · f16  —— 最大最准（948 MB），本机内存够就用它
+    · q8_0 —— 一半大小（506 MB），实测回答一样，推荐
+    · q4_k_m —— 更小（约 300 MB），适合内存紧张或要分发
+
+【修改方式：换补丁 / 调补丁强度】
+
+  · 换补丁：改 `--lora` 后面的路径，指向新补丁转出的 GGUF
+  · 改强度：把 `--lora` 换成 `--lora-scaled 路径:系数`，
+    比如 `--lora-scaled /路径/lora.gguf:0.5`，系数越小越接近原模型
+  · 补丁重新训练后：重跑上面的"第 1 步"转换，再重启服务
+
+【一句话总结三条路】
+  Python        —— 学习调试，补丁直接挂，最灵活
+  Ollama        —— 做好给人用，图形界面、API 都方便
+  llama.cpp     —— 命令行精打细算，能挂补丁、能改精度
+  三条路共用同一个补丁，原库全程不动。''')
+
+
+# ===========================================================================
 # 收尾
 # ===========================================================================
 标题('本课小结')
 
-说明('''  1. Ollama 不认 LoRA 补丁，新版本连 ADAPTER 指令都移除了。
-  2. 正确路径：合并补丁 → 转 GGUF → 写 Modelfile → ollama create。
-  3. 合并用 `工具/合并模型到Ollama.py`，转换用 `工具/convert_hf_to_gguf.py`，
-     两个脚本都存进了项目，本机实测可用。
-  4. 验证：`ollama run chaoshan-beef`，贴 `### 指令:` 格式的问题。
-  5. 改了补丁要重新走全流程；/tmp 里的 GGUF 记得复制到持久位置。
+说明('''  1. 三条路用同一个补丁，原来的模型库一个都不动：
+     Python 直接挂补丁 / 合并后导入 Ollama / llama.cpp 挂补丁或改精度。
+  2. Ollama 不认 LoRA 补丁，新版本连 ADAPTER 指令都移除了。
+     正确路径：合并补丁 → 转 GGUF → 写 Modelfile → ollama create。
+  3. 合并用 `工具/合并模型到Ollama.py`，转完整模型用 `工具/convert_hf_to_gguf.py`，
+     转 LoRA 补丁用 `工具/convert_lora_to_gguf.py`，三个脚本本机实测可用。
+  4. llama.cpp 路能直接挂补丁（`--lora`），回答一字不差；
+     还能用 `llama-quantize` 把 948 MB 压到 506 MB（q8_0）。
+  5. 验证：`ollama run chaoshan-beef` 或 `llama-server --lora`，
+     贴 `### 指令:` 格式的问题。
 
   【你现在拥有的能力】
-    · 把 Python 里训的模型搬到 Ollama，能在任何 Ollama 客户端用
-    · 看懂 GGUF、Modelfile 这些"模型打包"概念
+    · 同一块补丁，在 Python、Ollama、llama.cpp 三处都能用
+    · 看懂 GGUF、Modelfile、量化精度这些"模型打包"概念
     · 知道新版本 Ollama 的坑在哪，不再被过时教程带偏
+    · 全程不动原来的模型库，随时能退回原样
 
   【下一课预告】
     课程到此告一段落。想继续深入，可以看学习手册末尾的三个方向：
